@@ -1,0 +1,27 @@
+# ============================================
+# .htaccess untuk menyamarkan ekstensi .php
+# Tanpa mengganggu fungsi website
+# ============================================
+
+Options +FollowSymLinks -MultiViews
+RewriteEngine On
+RewriteBase /
+
+# ========== 1. MENYAMARKAN EKSTENSI .php ==========
+# Jika request bukan file/folder yang nyata, coba tambahkan .php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ $1.php [L,QSA]
+
+# ========== 2. KEAMANAN DASAR ==========
+# Nonaktifkan directory listing
+Options -Indexes
+
+# Blokir akses ke file konfigurasi dan data penting
+<FilesMatch "^(config\.php|\.env|\.git|login_error_log\.txt)$">
+    Require all denied
+</FilesMatch>
+
+# Untuk hosting lama yang pakai Apache 2.2, ganti "Require all denied" dengan:
+# Order Allow,Deny
+# Deny from all

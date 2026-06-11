@@ -1,0 +1,80 @@
+# ============================================
+# .htaccess untuk LMS Pembelajaran Qur'an
+# ============================================
+
+# Aktifkan rewrite engine
+RewriteEngine On
+RewriteBase /
+
+# ========== 1. MENYAMARKAN EKSTENSI .php ==========
+# Menghapus .php dari URL (contoh: /admin/dashboard -> /admin/dashboard.php)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*)$ $1.php [L]
+
+# Redirect URL yang mengandung .php ke tanpa .php (untuk SEO & kerapian)
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# ========== 2. BLOKIR AKSES KE FILE SENSITIF ==========
+# Blokir akses langsung ke config.php
+<Files "config.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Blokir akses ke folder includes (berisi fungsi dan header)
+<IfModule mod_authz_core.c>
+    <DirectoryMatch "^.*/includes/">
+        Require all denied
+    </DirectoryMatch>
+</IfModule>
+
+# Blokir akses ke folder uploads agar tidak bisa diakses langsung (kecuali file yang diperlukan)
+<IfModule mod_authz_core.c>
+    <DirectoryMatch "^.*/uploads/">
+        Options -Indexes
+        Require all granted
+    </DirectoryMatch>
+</IfModule>
+
+# Nonaktifkan directory listing untuk semua folder
+Options -Indexes
+
+# ========== 3. KEAMANAN TAMBAHAN ==========
+# Mencegah akses ke file .htaccess itu sendiri
+<Files ".htaccess">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Mencegah akses ke file dengan ekstensi .sql, .log, .ini, .env
+<FilesMatch "\.(sql|log|ini|env|sh|bak|old)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# ========== 4. HTTPS REDIRECT (Opsional - Aktifkan jika sudah pakai SSL) ==========
+# Uncomment baris di bawah jika sudah memasang SSL
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# ========== 5. CUSTOM ERROR PAGE ==========
+# Redirect 404 ke halaman khusus (jika ada file 404.php)
+ErrorDocument 404 /404.php
+
+# ========== 6. KOMPRESI FILE (Mempercepat loading) ==========
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json
+</IfModule>
+
+# ========== 7. CACHE STATIC FILES ==========
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+</IfModule>
