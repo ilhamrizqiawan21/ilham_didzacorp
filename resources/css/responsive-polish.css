@@ -1,0 +1,538 @@
+/* Global responsive layout polish
+ * Keeps existing page/component markup intact while making shared surfaces
+ * behave predictably across desktop, tablet and mobile widths.
+ */
+
+:root {
+    --responsive-page-gutter: clamp(0.9rem, 2vw, 1.5rem);
+    --responsive-card-gap: clamp(0.75rem, 1.5vw, 1.25rem);
+    --responsive-card-radius: 0.875rem;
+}
+
+html,
+body,
+#app {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
+.page-content {
+    width: 100%;
+    min-width: 0;
+    padding-left: var(--responsive-page-gutter);
+    padding-right: var(--responsive-page-gutter);
+}
+
+.page-content > * {
+    min-width: 0;
+}
+
+.page-content .row {
+    --bs-gutter-x: var(--responsive-card-gap);
+    --bs-gutter-y: var(--responsive-card-gap);
+    min-width: 0;
+}
+
+.page-content .row > [class*="col-"] {
+    min-width: 0;
+}
+
+.card,
+.workspace-panel,
+.metric-tile,
+.dashboard-hero,
+.workspace-tabs,
+.content-summary {
+    max-width: 100%;
+    min-width: 0;
+    border-radius: min(var(--card-radius, var(--responsive-card-radius)), var(--responsive-card-radius));
+}
+
+.card-header,
+.card-body,
+.card-footer {
+    min-width: 0;
+}
+
+.card-header {
+    gap: 0.75rem;
+}
+
+.card-header > * {
+    min-width: 0;
+}
+
+.card-header .card-title,
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6 {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Metrics keep a stable card width on desktop, then settle into predictable
+ * tablet and mobile columns. */
+.metric-strip {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 205px), 1fr));
+    gap: var(--responsive-card-gap);
+    width: 100%;
+    min-width: 0;
+}
+
+.metric-tile {
+    width: 100%;
+    min-width: 0;
+    min-height: 74px;
+}
+
+.metric-copy {
+    min-width: 0;
+}
+
+.metric-copy strong,
+.metric-copy small {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Hero surfaces should shrink rather than create horizontal overflow. */
+.dashboard-hero {
+    min-height: 0;
+}
+
+.dashboard-hero > *,
+.dashboard-hero .dashboard-hero-content,
+.dashboard-hero .dashboard-hero-copy {
+    min-width: 0;
+}
+
+/* Shared tables stay usable: desktop keeps columns proportional, while
+ * smaller screens get a controlled horizontal viewport when no mobile-card
+ * representation exists. */
+.app-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.app-table-wrapper .app-table,
+.app-table-wrapper table {
+    max-width: none;
+}
+
+.app-table-wrapper.table-responsive {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+}
+
+.app-table-wrapper .app-table th,
+.app-table-wrapper .app-table td {
+    max-width: 0;
+}
+
+.app-table-wrapper .app-table td .text-truncate,
+.app-table-wrapper .app-table td > strong,
+.app-table-wrapper .app-table td > span {
+    min-width: 0;
+}
+
+/* Forms and action bars should never force the page wider than its viewport. */
+.form-control,
+.form-select,
+.input-group,
+.input-group > *,
+.app-page-actions,
+.content-summary-actions,
+.card-header .btn-group {
+    min-width: 0;
+}
+
+.app-page-actions,
+.content-summary-actions {
+    max-width: 100%;
+}
+
+/* Long labels, names and URLs are common in the LMS. */
+.page-content .text-break,
+.page-content td,
+.page-content th,
+.page-content .list-group-item,
+.page-content .dropdown-item {
+    overflow-wrap: anywhere;
+}
+
+/* Dropdowns/modals should remain inside narrow viewports. */
+.dropdown-menu {
+    max-width: min(92vw, 420px);
+}
+
+.modal-dialog {
+    width: auto;
+    max-width: calc(100vw - 1.5rem);
+}
+
+.modal-content {
+    min-width: 0;
+}
+
+/* Mobile navigation respects devices with a home indicator. */
+.mobile-bottom-nav {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* Tablet: give dense two-column pages enough breathing room. */
+@media (max-width: 991.98px) {
+    .page-content {
+        padding-top: clamp(1rem, 2.5vw, 1.5rem);
+        padding-bottom: clamp(1rem, 2.5vw, 1.5rem);
+    }
+
+    .page-content > .row > [class*="col-md-"],
+    .page-content > .row > [class*="col-lg-"] {
+        width: 100%;
+    }
+
+    .metric-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .app-page-header {
+        align-items: stretch;
+    }
+
+    .app-page-actions {
+        justify-content: flex-start;
+    }
+
+    .topbar {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .topbar-actions {
+        gap: 0.35rem;
+    }
+
+    .topbar-actions .dropdown-toggle {
+        max-width: 42vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .sidebar {
+        width: min(var(--sidebar-width), 88vw);
+    }
+}
+
+/* Phone landscape / large phones. */
+@media (max-width: 767.98px) {
+    .metric-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .metric-tile {
+        min-height: 76px;
+    }
+
+    .dashboard-hero {
+        padding: clamp(1rem, 4vw, 1.5rem);
+    }
+
+    .dashboard-hero .dashboard-hero-orbit,
+    .dashboard-hero .dashboard-hero-icon {
+        display: none;
+    }
+
+    .page-header {
+        margin-bottom: 1rem;
+    }
+
+    .page-header h1 {
+        font-size: clamp(1.35rem, 5vw, 1.8rem);
+    }
+
+    .content-summary {
+        align-items: stretch;
+    }
+
+    .content-summary-actions,
+    .app-page-actions {
+        width: 100%;
+    }
+
+    .content-summary-actions > *,
+    .app-page-actions > * {
+        flex: 1 1 auto;
+        min-width: min(160px, 100%);
+    }
+
+    .card-header {
+        flex-wrap: wrap;
+    }
+
+    .card-header .assignment-search,
+    .card-header .app-table-filter,
+    .card-header .form-control {
+        width: 100%;
+    }
+
+    .app-table-wrapper .app-table {
+        min-width: var(--app-table-min-width, 680px);
+    }
+
+    .modal-dialog {
+        margin: 0.75rem;
+        max-width: calc(100vw - 1.5rem);
+    }
+}
+
+/* Small phones: compact but still touch-friendly. */
+@media (max-width: 575.98px) {
+    .metric-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .metric-tile {
+        min-height: 68px;
+    }
+
+    .page-content {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .topbar {
+        padding-left: 0.6rem;
+        padding-right: 0.6rem;
+    }
+
+    .topbar-brand {
+        gap: 0.45rem;
+    }
+
+    .topbar-title-main {
+        font-size: 0.82rem;
+    }
+
+    .topbar-title-sub {
+        display: none;
+    }
+
+    .topbar-actions .dropdown-toggle {
+        max-width: 44vw;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .topbar-actions .theme-toggle-btn,
+    .topbar-actions .topbar-icon-btn {
+        width: 36px;
+        height: 36px;
+        flex: 0 0 36px;
+    }
+
+    .card-header,
+    .card-body,
+    .card-footer {
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+    }
+
+    .card-header .btn,
+    .card-footer .btn {
+        max-width: 100%;
+    }
+
+    .content-summary-actions > *,
+    .app-page-actions > * {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .form-label {
+        font-size: 0.82rem;
+    }
+
+    .btn {
+        min-height: 38px;
+    }
+
+    .app-table-wrapper {
+        border-radius: 0.55rem;
+    }
+
+    .app-table-wrapper .app-table {
+        min-width: var(--app-table-min-width, 620px);
+    }
+
+    .notification-menu {
+        width: min(92vw, 340px);
+    }
+}
+
+/* Ultra-small screens: prevent action groups and badges from overflowing. */
+@media (max-width: 399.98px) {
+    .metric-tile {
+        padding: 0.7rem;
+    }
+
+    .metric-icon {
+        width: 34px;
+        height: 34px;
+        flex: 0 0 34px;
+    }
+
+    .topbar-toggle-btn {
+        width: 36px;
+        height: 36px;
+        flex: 0 0 36px;
+    }
+
+    .topbar-actions .dropdown-toggle {
+        max-width: 38vw;
+    }
+}
+
+/* Final visual pass: keep the application calm and readable while retaining
+ * the school's dynamic color theme. These overrides apply to the modern
+ * Inertia shell and leave legacy Blade pages unchanged. */
+.app-shell .modern-topbar {
+    background: var(--surface-card, #fff) !important;
+    background-image: none !important;
+    backdrop-filter: none;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
+}
+
+.app-shell .modern-sidebar {
+    background: var(--surface-card, #fff) !important;
+    background-image: none !important;
+    box-shadow: 4px 0 18px rgba(15, 23, 42, 0.1);
+}
+
+.modern-topbar .topbar-search,
+.modern-topbar .topbar-toggle-btn,
+.modern-topbar .topbar-icon-btn,
+.modern-topbar .topbar-account-btn {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dashboard-hero {
+    background: var(--surface-card, #fff) !important;
+    background-image: none !important;
+    border: 1px solid var(--modern-border, rgba(148, 163, 184, 0.24));
+    box-shadow: var(--modern-shadow-sm, 0 8px 20px rgba(15, 23, 42, 0.06));
+}
+
+.dashboard-hero::before,
+.dashboard-hero::after {
+    opacity: 0.45;
+}
+
+.app-shell .card,
+.app-shell .workspace-panel,
+.app-shell .metric-tile {
+    box-shadow: var(--modern-shadow-sm, 0 8px 20px rgba(15, 23, 42, 0.06));
+}
+
+.app-shell .card:hover,
+.app-shell .stat-card:hover,
+.app-shell .metric-tile:hover {
+    transform: none;
+    box-shadow: var(--modern-shadow, 0 14px 36px rgba(15, 23, 42, 0.08));
+}
+
+.app-shell .btn-primary,
+.app-shell .btn-success {
+    background-image: none !important;
+    background-color: var(--primary-500, var(--app-primary)) !important;
+}
+
+.app-shell .btn-primary:hover,
+.app-shell .btn-success:hover {
+    background-image: none !important;
+    background-color: var(--primary-600, var(--app-primary)) !important;
+    transform: none;
+}
+
+.app-shell .page-header h1,
+.app-shell .page-header h4,
+.app-shell .dashboard-hero h1 {
+    letter-spacing: -0.02em;
+}
+
+@media (max-width: 767.98px) {
+    .app-shell .app-table-wrapper {
+        box-shadow: none;
+    }
+
+    .app-shell .app-table-wrapper .table-action-column {
+        position: sticky;
+        right: 0;
+        z-index: 3;
+        background: var(--surface-card, #fff);
+        box-shadow: -5px 0 8px rgba(15, 23, 42, 0.06);
+    }
+
+    .app-shell .app-table-wrapper thead .table-action-column {
+        background: var(--surface-muted, #f8fafc);
+    }
+
+    .content-summary-actions,
+    .app-page-actions {
+        gap: 0.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-shell .card:hover,
+    .app-shell .stat-card:hover,
+    .app-shell .metric-tile:hover,
+    .app-shell .btn-primary:hover,
+    .app-shell .btn-success:hover {
+        box-shadow: var(--modern-shadow-sm, 0 8px 20px rgba(15, 23, 42, 0.06));
+    }
+}
+
+/* Keep the mobile navigation and drawer mutually exclusive. The drawer sits
+ * above the page overlay, while the bottom navigation remains interactive
+ * above that overlay unless it is explicitly hidden in the open state. */
+@media (max-width: 991.98px) {
+    .app-shell.sidebar-is-open .mobile-bottom-nav {
+        display: none;
+    }
+}
+
+/* The overlay is a mobile drawer affordance. Keep it impossible to activate
+ * on desktop even if a stale component state or stylesheet cache remains. */
+@media (min-width: 992px) {
+    .app-shell .sidebar-overlay {
+        display: none !important;
+        pointer-events: none !important;
+        backdrop-filter: none !important;
+    }
+}

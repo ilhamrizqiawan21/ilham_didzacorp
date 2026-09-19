@@ -1,0 +1,142 @@
+/* Login isolation layer
+ * Keeps the public login surface visually stable regardless of the
+ * application theme, Bootstrap dark variables, browser autofill, or
+ * legacy global component rules.
+ */
+
+.login-page {
+    color-scheme: light;
+}
+
+.login-page .input-shell,
+.login-page .form-control,
+.login-page .form-control:focus,
+.login-page .form-control:active {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+
+.login-page .input-shell {
+    border-color: #e2e8f0 !important;
+}
+
+.login-page .input-shell:focus-within {
+    border-color: color-mix(in srgb, var(--app-primary, #198754) 70%, #ffffff) !important;
+    background-color: #ffffff !important;
+}
+
+.login-page .form-control {
+    border: 0 !important;
+    box-shadow: none !important;
+    -webkit-text-fill-color: #0f172a;
+    caret-color: #0f172a;
+}
+
+.login-page .form-control::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1;
+}
+
+.login-page .form-control:-webkit-autofill,
+.login-page .form-control:-webkit-autofill:hover,
+.login-page .form-control:-webkit-autofill:focus,
+.login-page .form-control:-webkit-autofill:active {
+    -webkit-text-fill-color: #0f172a !important;
+    caret-color: #0f172a !important;
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    box-shadow: 0 0 0 1000px #ffffff inset !important;
+    border: 0 !important;
+    transition: background-color 9999s ease-out 0s;
+}
+
+.login-page .form-check-input {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color-scheme: light;
+}
+
+.login-page .form-check-input:checked {
+    background-color: var(--app-primary, #198754) !important;
+    border-color: var(--app-primary, #198754) !important;
+}
+
+.login-page .form-check-input:focus {
+    border-color: var(--app-primary, #198754) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-primary, #198754) 12%, transparent) !important;
+}
+
+.login-page .form-check-label {
+    color: #64748b !important;
+}
+
+.login-page .forgot-link {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
+.login-page .forgot-link:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--app-primary, #198754) 42%, transparent);
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+.login-page .login-help {
+    display: block !important;
+    margin: 13px 0 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #64748b !important;
+}
+
+html[data-bs-theme='dark'] .login-page {
+    --login-surface: #ffffff !important;
+    --login-surface-soft: #f8fafc !important;
+    --login-border: #e2e8f0 !important;
+    --login-text: #0f172a !important;
+    --login-text-soft: #475569 !important;
+    --login-text-muted: #64748b !important;
+    --login-danger-bg: #fff1f2 !important;
+    --login-danger-text: #be123c !important;
+    --login-success-bg: #f0fdf4 !important;
+    --login-success-text: #166534 !important;
+    background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--app-primary, #198754) 9%, transparent), transparent 32rem),
+        #f6f8fa !important;
+    color: #0f172a !important;
+}
+
+html[data-bs-theme='dark'] .login-page .brand-mark,
+html[data-bs-theme='dark'] .login-page .login-card,
+html[data-bs-theme='dark'] .login-page .public-board {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.07) !important;
+}
+
+html[data-bs-theme='dark'] .login-page .login-brand h1,
+html[data-bs-theme='dark'] .login-page .login-card-heading h2,
+html[data-bs-theme='dark'] .login-page .public-board-title h2,
+html[data-bs-theme='dark'] .login-page .public-announcement h3 {
+    color: #0f172a !important;
+}
+
+html[data-bs-theme='dark'] .login-page .school-motto,
+html[data-bs-theme='dark'] .login-page .school-address,
+html[data-bs-theme='dark'] .login-page .login-card-heading p,
+html[data-bs-theme='dark'] .login-page .public-announcement-meta,
+html[data-bs-theme='dark'] .login-page .login-footer {
+    color: #64748b !important;
+}
+
+html[data-bs-theme='dark'] .login-page .public-announcement p {
+    color: #475569 !important;
+}
+
+html[data-bs-theme='dark'] .login-page .public-announcement {
+    border-color: #e2e8f0 !important;
+}
