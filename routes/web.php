@@ -13,7 +13,6 @@ use App\Http\Controllers\Admin\RekapController;
 use App\Http\Controllers\Admin\SchoolSettingController;
 use App\Http\Controllers\Admin\SystemController;
 use App\Http\Controllers\Admin\TahunAjaranController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\Guru\AbsensiController;
@@ -31,10 +30,6 @@ use App\Http\Controllers\Guru\TugasController as GuruTugasController;
 use App\Http\Controllers\Guru\WaliKelasController as GuruWaliKelasController;
 use App\Http\Controllers\GuruPerformanceController;
 use App\Http\Controllers\GuruPerformanceExportController;
-use App\Http\Controllers\Kepsek\KalenderController as KepsekKalenderController;
-use App\Http\Controllers\Kepsek\DashboardController as KepsekDashboardController;
-use App\Http\Controllers\Kepsek\LaporanController;
-use App\Http\Controllers\Kepsek\StatistikController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportExcelExportController;
 use App\Http\Controllers\Siswa\ChatController as SiswaChatController;
@@ -60,14 +55,8 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // The single teacher account is the application manager as well as the instructor.
 // Keep the existing /admin route namespace so the established Laravel UI and
 // links remain compatible, but authorize it for the guru role.
-Route::middleware(['auth', 'role:admin,guru'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:guru'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/users/import-siswa/template', [UserController::class, 'downloadSiswaTemplate'])->name('users.import-siswa.template');
-    Route::post('/users/import-siswa', [UserController::class, 'importSiswa'])->name('users.import-siswa');
-    Route::get('/users/export/excel', [UserController::class, 'exportExcel'])->name('users.export.excel');
-    Route::resource('users', UserController::class)->except(['show']);
-    Route::post('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
-    Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
     Route::get('/kelas', [KelasController::class, 'index'])->name('kelas.index');
     Route::post('/kelas', [KelasController::class, 'store'])->name('kelas.store');
     Route::put('/kelas/{kelas}', [KelasController::class, 'update'])->name('kelas.update');
@@ -255,50 +244,6 @@ Route::middleware(['auth', 'role:siswa', RequireStudentPhone::class])->prefix('s
     Route::post('/notifikasi/mark-all-read', [SiswaNotifikasiController::class, 'markAllRead'])->name('notifikasi.mark-all-read');
     Route::get('/pengaturan', [AccountSettingsController::class, 'edit'])->name('pengaturan');
     Route::put('/pengaturan/telepon', [AccountSettingsController::class, 'updateStudentPhone'])->name('pengaturan.telepon');
-    Route::put('/pengaturan', [AccountSettingsController::class, 'update'])->name('pengaturan.update');
-    Route::post('/pengaturan/foto', [AccountSettingsController::class, 'uploadAvatar'])->name('pengaturan.foto');
-    Route::delete('/pengaturan/foto', [AccountSettingsController::class, 'deleteAvatar'])->name('pengaturan.foto.delete');
-    Route::get('/profil', [AccountSettingsController::class, 'edit'])->name('profil');
-    Route::put('/profil', [AccountSettingsController::class, 'update'])->name('profil.update');
-});
-
-Route::middleware(['auth', 'role:kepala_sekolah'])->prefix('kepsek')->name('kepsek.')->group(function () {
-    Route::get('/dashboard', [KepsekDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/kalender', [KepsekKalenderController::class, 'index'])->name('kalender');
-    Route::post('/kalender', [KepsekKalenderController::class, 'store'])->name('kalender.store');
-    Route::put('/kalender/{calendarEvent}', [KepsekKalenderController::class, 'update'])->name('kalender.update');
-    Route::delete('/kalender/{calendarEvent}', [KepsekKalenderController::class, 'destroy'])->name('kalender.destroy');
-    Route::patch('/kalender/{calendarEvent}/toggle-done', [KepsekKalenderController::class, 'toggleDone'])->name('kalender.toggle-done');
-    Route::get('/pengumuman', [AdminPengumumanController::class, 'index'])->name('pengumuman.index');
-    Route::get('/pengumuman/{pengumuman}', [AdminPengumumanController::class, 'show'])->name('pengumuman.show');
-    Route::post('/pengumuman', [AdminPengumumanController::class, 'store'])->name('pengumuman.store');
-    Route::put('/pengumuman/{pengumuman}', [AdminPengumumanController::class, 'update'])->name('pengumuman.update');
-    Route::delete('/pengumuman/{pengumuman}', [AdminPengumumanController::class, 'destroy'])->name('pengumuman.destroy');
-    Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifikasi.index');
-    Route::post('/notifikasi/{notifikasi}/read', [NotificationController::class, 'markRead'])->name('notifikasi.mark-read');
-    Route::post('/notifikasi/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifikasi.mark-all-read');
-    Route::get('/laporan/absensi', [LaporanController::class, 'absensi'])->name('laporan.absensi');
-    Route::get('/laporan/nilai', [LaporanController::class, 'nilai'])->name('laporan.nilai');
-    Route::get('/laporan/wali-kelas', [LaporanController::class, 'waliKelas'])->name('laporan.wali-kelas');
-    Route::get('/laporan/wali-kelas/{waliKelas}', [LaporanController::class, 'waliKelasShow'])->name('laporan.wali-kelas.show')->middleware('can:lihat-laporan-wali-kelas,waliKelas');
-    Route::get('/laporan/rekap-absensi', [LaporanController::class, 'rekapAbsensi'])->name('laporan.rekap-absensi');
-    Route::get('/laporan/rekap-tugas', [LaporanController::class, 'rekapTugas'])->name('laporan.rekap-tugas');
-    Route::get('/laporan/rekap-sikap', [LaporanController::class, 'rekapSikap'])->name('laporan.rekap-sikap');
-    Route::get('/performa-guru', GuruPerformanceController::class)->name('performa-guru');
-    Route::get('/performa-guru/export/excel', [GuruPerformanceExportController::class, 'excel'])->name('performa-guru.export.excel');
-    Route::get('/performa-guru/export/pdf', [GuruPerformanceExportController::class, 'pdf'])->name('performa-guru.export.pdf');
-    Route::get('/export/laporan/absensi/excel', [ExportController::class, 'kepsekAbsensiExcel'])->name('export.laporan.absensi.excel');
-    Route::get('/export/laporan/absensi/pdf', [ExportController::class, 'kepsekAbsensiPdf'])->name('export.laporan.absensi.pdf');
-    Route::get('/export/laporan/nilai/excel', [ExportController::class, 'kepsekNilaiExcel'])->name('export.laporan.nilai.excel');
-    Route::get('/export/laporan/nilai/pdf', [ExportController::class, 'kepsekNilaiPdf'])->name('export.laporan.nilai.pdf');
-    Route::get('/export/laporan/rekap-tugas/excel', [ExportController::class, 'kepsekRekapTugasExcel'])->name('export.laporan.rekap-tugas.excel');
-    Route::get('/export/laporan/rekap-tugas/pdf', [ExportController::class, 'kepsekRekapTugasPdf'])->name('export.laporan.rekap-tugas.pdf');
-    Route::get('/export/laporan/rekap-absensi/excel', [ExportController::class, 'kepsekRekapAbsensiExcel'])->name('export.laporan.rekap-absensi.excel');
-    Route::get('/export/laporan/rekap-absensi/pdf', [ExportController::class, 'kepsekRekapAbsensiPdf'])->name('export.laporan.rekap-absensi.pdf');
-    Route::get('/export/laporan/rekap-sikap/excel', [ExportController::class, 'kepsekRekapSikapExcel'])->name('export.laporan.rekap-sikap.excel');
-    Route::get('/export/laporan/rekap-sikap/pdf', [ExportController::class, 'kepsekRekapSikapPdf'])->name('export.laporan.rekap-sikap.pdf');
-    Route::get('/statistik', [StatistikController::class, 'index'])->name('statistik');
-    Route::get('/pengaturan', [AccountSettingsController::class, 'edit'])->name('pengaturan');
     Route::put('/pengaturan', [AccountSettingsController::class, 'update'])->name('pengaturan.update');
     Route::post('/pengaturan/foto', [AccountSettingsController::class, 'uploadAvatar'])->name('pengaturan.foto');
     Route::delete('/pengaturan/foto', [AccountSettingsController::class, 'deleteAvatar'])->name('pengaturan.foto.delete');

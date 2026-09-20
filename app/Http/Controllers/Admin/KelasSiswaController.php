@@ -312,6 +312,6 @@ class KelasSiswaController extends Controller
             throw new AuthenticationException;
         }
 
-        abort_unless($user->hasRole(RoleAccess::ADMIN) || $user->hasRole(RoleAccess::GURU), 403, 'Anda tidak memiliki akses ke halaman ini.');
+        abort_unless($user->hasRole(RoleAccess::GURU), 403, 'Anda tidak memiliki akses ke halaman ini.');
     }
 }

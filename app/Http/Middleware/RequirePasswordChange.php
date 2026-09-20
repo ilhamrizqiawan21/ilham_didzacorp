@@ -39,9 +39,7 @@ class RequirePasswordChange
         }
 
         $route = match ($role) {
-            'admin' => 'admin.pengaturan-akun',
             'guru' => 'guru.pengaturan',
-            'kepala_sekolah' => 'kepsek.pengaturan',
             default => null,
         };
 

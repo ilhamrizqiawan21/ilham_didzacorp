@@ -76,11 +76,6 @@ class User extends Authenticatable
         return $this->role && $this->role->nama_role === $roleName;
     }
 
-    public function isAdmin(): bool
-    {
-        return $this->hasRole('admin');
-    }
-
     public function isGuru(): bool
     {
         return $this->hasRole('guru');
@@ -89,11 +84,6 @@ class User extends Authenticatable
     public function isSiswa(): bool
     {
         return $this->hasRole('siswa');
-    }
-
-    public function isKepalaSekolah(): bool
-    {
-        return $this->hasRole('kepala_sekolah');
     }
 
     // Relasi: guru mengajar banyak kelas_mapel

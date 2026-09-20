@@ -36,14 +36,10 @@ class PengumumanController extends Controller
                     });
             });
         }
-        if (Auth::user()->role?->nama_role === 'kepala_sekolah') {
-            $query->where(fn ($q) => $q->whereIn('target', ['semua', 'guru'])->orWhere('created_by', Auth::id()));
-        }
-
         $pengumuman = $query->paginate(15)->withQueryString();
         $pengumuman->through(function (Pengumuman $item) {
             $prefix = $this->routePrefix();
-            $item->can_edit = Auth::user()->isAdmin() || (Auth::user()->isGuru() && (int) $item->created_by === (int) Auth::id());
+            $item->can_edit = Auth::user()->isGuru() && (int) $item->created_by === (int) Auth::id();
             $item->can_delete = $item->can_edit;
             $item->update_url = route($prefix.'.update', $item);
             $item->delete_url = route($prefix.'.destroy', $item);
@@ -69,11 +65,10 @@ class PengumumanController extends Controller
         $role = Auth::user()->role?->nama_role;
 
         return match ($role) {
-            'admin', 'guru' => Inertia::render('Admin/Pengumuman/Index', compact('pengumuman', 'kelas', 'kelasMapel', 'targetKelasOptions') + [
+            'guru' => Inertia::render('Admin/Pengumuman/Index', compact('pengumuman', 'kelas', 'kelasMapel', 'targetKelasOptions') + [
                 'routePrefix' => $this->routePrefix(),
                 'storeUrl' => route($this->routePrefix().'.store'),
             ]),
-            'kepala_sekolah' => Inertia::render('Kepsek/Pengumuman/Index', compact('pengumuman') + ['routePrefix' => $this->routePrefix()]),
             default => abort(403),
         };
     }
@@ -93,10 +88,7 @@ class PengumumanController extends Controller
         ] : null;
 
         return match ($role) {
-            'admin', 'guru' => Inertia::render('Admin/Pengumuman/Show', compact('pengumuman', 'targetKelasLabels') + [
-                'backUrl' => route($this->routePrefix().'.index'),
-            ]),
-            'kepala_sekolah' => Inertia::render('Kepsek/Pengumuman/Show', compact('pengumuman', 'targetKelasLabels') + [
+            'guru' => Inertia::render('Admin/Pengumuman/Show', compact('pengumuman', 'targetKelasLabels') + [
                 'backUrl' => route($this->routePrefix().'.index'),
             ]),
             default => abort(403),
@@ -106,11 +98,7 @@ class PengumumanController extends Controller
     public function store(Request $request)
     {
         $role = Auth::user()->role?->nama_role;
-        $allowed = match ($role) {
-            'guru' => ['semua', 'kelas_mapel'],
-            'admin' => ['semua', 'guru', 'siswa', 'kelas_mapel'],
-            default => [],
-        };
+        $allowed = $role === 'guru' ? ['semua', 'kelas_mapel'] : [];
         abort_unless($allowed !== [], 403);
         $v = $request->validate([
             'judul' => 'required|string|max:200', 'isi' => 'required|string',
@@ -133,8 +121,8 @@ class PengumumanController extends Controller
     public function update(Request $request, Pengumuman $pengumuman)
     {
         $role = Auth::user()->role?->nama_role;
-        abort_unless($role === 'admin' || ($role === 'guru' && (int) $pengumuman->created_by === (int) Auth::id()), 403);
-        $allowed = $role === 'guru' ? ['semua', 'kelas_mapel'] : ['semua', 'guru', 'siswa', 'kelas_mapel'];
+        abort_unless($role === 'guru' && (int) $pengumuman->created_by === (int) Auth::id(), 403);
+        $allowed = ['semua', 'kelas_mapel'];
         $v = $request->validate([
             'judul' => 'required|string|max:200', 'isi' => 'required|string',
             'target' => ['required', Rule::in($allowed)],
@@ -164,7 +152,7 @@ class PengumumanController extends Controller
     public function destroy(Pengumuman $pengumuman)
     {
         $role = Auth::user()->role?->nama_role;
-        abort_unless($role === 'admin' || ($role === 'guru' && (int) $pengumuman->created_by === (int) Auth::id()), 403);
+        abort_unless($role === 'guru' && (int) $pengumuman->created_by === (int) Auth::id(), 403);
         $this->deletePublicFile($pengumuman);
         $pengumuman->delete();
 
@@ -215,19 +203,11 @@ class PengumumanController extends Controller
 
     private function routePrefix(): string
     {
-        return match (Auth::user()->role?->nama_role) {
-            'guru' => 'guru.pengumuman', 'kepala_sekolah' => 'kepsek.pengumuman', default => 'admin.pengumuman',
-        };
+        return 'guru.pengumuman';
     }
 
     private function canView(Pengumuman $p, ?string $role): bool
     {
-        if ($role === 'admin') {
-            return true;
-        }
-        if ($role === 'kepala_sekolah') {
-            return in_array($p->target, ['semua', 'guru'], true) || (int) $p->created_by === (int) Auth::id();
-        }
         if ($role === 'guru') {
             if (in_array($p->target, ['semua', 'guru'], true) || (int) $p->created_by === (int) Auth::id()) {
                 return true;
@@ -250,7 +230,7 @@ class PengumumanController extends Controller
         } elseif ($target === 'kelas_mapel') {
             $query->whereHas('role', fn ($q) => $q->where('nama_role', 'siswa'))->whereHas('siswa', fn ($q) => $q->whereIn('kelas_id', $pengumuman->targetKelasIds())->where('status', 'aktif'));
         } else {
-            $query->whereHas('role', fn ($q) => $q->whereIn('nama_role', ['admin', 'guru', 'siswa', 'kepala_sekolah']));
+            $query->whereHas('role', fn ($q) => $q->whereIn('nama_role', ['guru', 'siswa']));
         }
         foreach ($query->with('role')->get(['id', 'role_id']) as $user) {
             Notifikasi::create(['user_id' => $user->id, 'tipe' => 'pengumuman_baru', 'judul' => 'Pengumuman baru', 'pesan' => $pengumuman->judul, 'link' => $this->notificationLinkForUser($user, $pengumuman)]);
@@ -259,9 +239,8 @@ class PengumumanController extends Controller
 
     private function notificationLinkForUser(User $user, Pengumuman $pengumuman): string
     {
-        return match ($user->role?->nama_role) {
-            'siswa' => route('siswa.pengumuman.show', $pengumuman), 'guru' => route('guru.pengumuman.show', $pengumuman),
-            'kepala_sekolah' => route('kepsek.pengumuman.show', $pengumuman), default => route('admin.pengumuman.show', $pengumuman),
-        };
+        return $user->isSiswa()
+            ? route('siswa.pengumuman.show', $pengumuman)
+            : route('guru.pengumuman.show', $pengumuman);
     }
 }

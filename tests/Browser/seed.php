@@ -32,7 +32,7 @@ if (! $app->environment('testing') || config('database.default') !== 'sqlite'
 
 Artisan::call('migrate', ['--force' => true]);
 $users = [];
-foreach (['admin', 'guru', 'siswa', 'kepala_sekolah'] as $roleName) {
+foreach (['guru', 'siswa'] as $roleName) {
     $role = Role::create(['nama_role' => $roleName]);
     $users[$roleName] = User::create([
         'username' => 'browser-'.$roleName,
@@ -95,6 +95,6 @@ $task = Tugas::create([
 PengumpulanTugas::create(['tugas_id' => $task->id, 'siswa_id' => $student->id, 'status' => 'belum']);
 Pengumuman::create([
     'judul' => 'Pengumuman Uji', 'isi' => 'Informasi sekolah untuk pengujian.',
-    'target' => 'semua', 'created_by' => $users['admin']->id, 'is_public_login' => true,
+    'target' => 'semua', 'created_by' => $users['guru']->id, 'is_public_login' => true,
 ]);
 echo "Browser fixtures ready.\n";

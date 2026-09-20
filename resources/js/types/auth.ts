@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'guru' | 'siswa' | 'kepala_sekolah';
+export type UserRole = 'guru' | 'siswa';
 
 export interface AuthUser {
     id: number;

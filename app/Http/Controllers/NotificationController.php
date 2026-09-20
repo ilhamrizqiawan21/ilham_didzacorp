@@ -70,10 +70,8 @@ class NotificationController extends Controller
     private function routePrefix(): string
     {
         return match (Auth::user()->role?->nama_role) {
-            'admin' => 'admin.notifikasi',
             'guru' => 'guru.notifikasi',
             'siswa' => 'siswa.notifikasi',
-            'kepala_sekolah' => 'kepsek.notifikasi',
             default => abort(403),
         };
     }

@@ -37,7 +37,7 @@ const announcementItems = computed(() => props.pengumuman.map((item) => ({
 })));
 
 function roleBadgeColor(role: string): string {
-    return { admin: 'danger', guru: 'primary', siswa: 'success', kepala_sekolah: 'warning' }[role] ?? 'secondary';
+    return { guru: 'primary', siswa: 'success' }[role] ?? 'secondary';
 }
 </script>
 

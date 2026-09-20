@@ -153,10 +153,8 @@ class LoginController extends Controller
     protected function redirectToByRole($user): string
     {
         return match ($user->role?->nama_role) {
-            'admin' => route('admin.dashboard'),
             'guru' => route('guru.dashboard'),
             'siswa' => route('siswa.dashboard'),
-            'kepala_sekolah' => route('kepsek.dashboard'),
             default => '/',
         };
     }
@@ -184,10 +182,8 @@ class LoginController extends Controller
         $path = '/' . ltrim((string) ($parts['path'] ?? ''), '/');
 
         return match ($role) {
-            'admin' => str_starts_with($path, '/admin'),
-            'guru' => str_starts_with($path, '/guru'),
+            'guru' => str_starts_with($path, '/guru') || str_starts_with($path, '/admin'),
             'siswa' => str_starts_with($path, '/siswa'),
-            'kepala_sekolah' => str_starts_with($path, '/kepsek'),
             default => false,
         };
     }

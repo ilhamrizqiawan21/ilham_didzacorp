@@ -6,8 +6,8 @@ interface Props { school: SchoolBranding; user?: AuthUser | null; pageTitle?: st
 const props = withDefaults(defineProps<Props>(), { user: null, pageTitle: 'Dashboard', notifications: () => ({ route: null, mark_all_route: null, unread_count: 0, latest: [] }), sidebarOpen: false });
 const emit = defineEmits<{ 'toggle-sidebar': []; 'open-command': [] }>();
 function logout() { router.post('/logout'); }
-function profileHref(role: UserRole | null | undefined): string | undefined { if (role === 'admin') return '/admin/pengaturan-akun'; if (role === 'guru') return '/guru/pengaturan'; if (role === 'siswa') return '/siswa/pengaturan'; if (role === 'kepala_sekolah') return '/kepsek/pengaturan'; return undefined; }
-function profileIsInertia(role: UserRole | null | undefined): boolean { return ['admin', 'guru', 'siswa', 'kepala_sekolah'].includes(role as string); }
+function profileHref(role: UserRole | null | undefined): string | undefined { if (role === 'guru') return '/guru/pengaturan'; if (role === 'siswa') return '/siswa/pengaturan'; return undefined; }
+function profileIsInertia(role: UserRole | null | undefined): boolean { return ['guru', 'siswa'].includes(role as string); }
 </script>
 
 <template>

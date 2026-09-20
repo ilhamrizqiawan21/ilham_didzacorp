@@ -211,9 +211,6 @@ class CalendarTimelineService
                             });
                     });
             });
-        } elseif ($user->isKepalaSekolah()) {
-            $query->whereIn('target', ['semua', 'guru'])
-                ->orWhere('created_by', $user->id);
         }
 
         return $query->get()->map(fn (Pengumuman $item) => [
@@ -241,8 +238,7 @@ class CalendarTimelineService
         return match ($user->role?->nama_role) {
             'siswa' => route('siswa.pengumuman.show', $item),
             'guru' => route('guru.pengumuman.show', $item),
-            'kepala_sekolah' => route('kepsek.pengumuman.show', $item),
-            default => route('admin.pengumuman.show', $item),
+            default => route('guru.pengumuman.show', $item),
         };
     }
 }

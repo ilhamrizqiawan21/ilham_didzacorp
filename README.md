@@ -2,7 +2,7 @@
 
 > **Single-school Learning Management System** untuk sekolah, madrasah, dan lembaga pendidikan yang membutuhkan platform pembelajaran digital mandiri.
 
-[![CI](https://github.com/ilhamrizqiawan21/lms_sekolah/actions/workflows/ci.yml/badge.svg)](https://github.com/ilhamrizqiawan21/lms_sekolah/actions/workflows/ci.yml)
+[![CI](https://github.com/ilhamrizqiawan21/ilham_didzacorp/actions/workflows/ci.yml/badge.svg)](https://github.com/ilhamrizqiawan21/ilham_didzacorp/actions/workflows/ci.yml)
 
 LMS Sekolah adalah aplikasi web generik untuk satu sekolah dengan satu akun guru/pengelola dan banyak siswa. Seluruh data akademik—mata pelajaran, kelas, siswa, materi, tugas, penilaian, absensi, komunikasi, notifikasi, kalender, laporan, dan branding sekolah—dapat dikonfigurasi dari aplikasi.
 
@@ -114,8 +114,8 @@ docs/
 ### Installation
 
 ```bash
-git clone https://github.com/ilhamrizqiawan21/lms_sekolah.git
-cd lms_sekolah
+git clone https://github.com/ilhamrizqiawan21/ilham_didzacorp.git
+cd ilham_didzacorp
 
 composer install
 npm install

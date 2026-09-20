@@ -17,10 +17,8 @@ async function login(page: Page, role: string) {
 }
 
 const routes = {
-    admin: ['/admin/dashboard', '/admin/kelas-siswa', '/admin/kelas-mapel', '/admin/users/create', '/admin/pengaturan', '/admin/pengumuman', '/admin/pengumuman/1', '/admin/log-login', '/admin/log-error', '/admin/log-akademik', '/admin/rekap/absensi', '/admin/rekap/nilai', '/admin/rekap/sikap', '/admin/rekap/tugas', '/admin/performa-guru'],
     guru: ['/guru/dashboard', '/guru/nilai', '/guru/nilai/1/input', '/guru/absensi?kelas_mapel_id=1', '/guru/sikap', '/guru/sikap/1/input', '/guru/rekap-nilai', '/guru/rekap-sikap', '/guru/rekap-absensi', '/guru/materi/1/list', '/guru/tugas', '/guru/tugas/1/list', '/guru/kelas-mapel/1', '/guru/jadwal-mengajar', '/guru/kelas-daring', '/guru/wali-kelas', '/guru/wali-kelas/1/absensi', '/guru/wali-kelas/1/pertemuan', '/guru/wali-kelas/1/penanganan'],
     siswa: ['/siswa/dashboard', '/siswa/progress', '/siswa/nilai', '/siswa/materi', '/siswa/materi/1', '/siswa/tugas', '/siswa/tugas/1', '/siswa/kelas-mapel/1', '/siswa/jadwal-pelajaran', '/siswa/kelas-daring', '/siswa/pengumuman', '/siswa/pengumuman/1'],
-    kepala_sekolah: ['/kepsek/dashboard', '/kepsek/statistik', '/kepsek/laporan/absensi', '/kepsek/laporan/nilai', '/kepsek/laporan/rekap-absensi', '/kepsek/laporan/rekap-sikap', '/kepsek/laporan/rekap-tugas', '/kepsek/laporan/wali-kelas', '/kepsek/laporan/wali-kelas/1', '/kepsek/performa-guru', '/kepsek/pengumuman', '/kepsek/pengumuman/1'],
 };
 
 for (const [role, pages] of Object.entries(routes)) {
@@ -90,14 +88,14 @@ test('teacher can create a task from the task menu', async ({ page }) => {
 });
 
 test('notifications and command navigation', async ({ page }) => {
-    await login(page, 'kepala_sekolah');
-    await page.goto('/kepsek/notifikasi');
+    await login(page, 'guru');
+    await page.goto('/guru/notifikasi');
     await page.getByRole('button', { name: 'Tandai Semua Sudah Dibaca' }).click();
     await expect(page.getByRole('button', { name: 'Tandai Semua Sudah Dibaca' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Buka akses cepat' }).click();
-    await page.locator('.command-palette input').fill('Statistik');
+    await page.locator('.command-palette input').fill('Rekap Nilai');
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\/kepsek\/statistik$/);
+    await expect(page).toHaveURL(/\/guru\/rekap-nilai$/);
 });
 
 test('command palette keeps Blade navigation native', async ({ page }) => {
@@ -152,7 +150,7 @@ test('grading serializes autosave and accepts decimal scores', async ({ page }) 
 });
 
 test('confirmation replacement settles the previous promise', async ({ page }) => {
-    await login(page, 'admin');
+    await login(page, 'guru');
     await page.evaluate(() => {
         void window.confirmDialog?.('Pertama').then(result => { document.body.dataset.firstConfirmation = String(result); });
         void window.confirmDialog?.('Kedua').then(result => { document.body.dataset.secondConfirmation = String(result); });
@@ -182,7 +180,7 @@ test('assignment paste keeps empty cells aligned with students', async ({ page }
 });
 
 test('command palette traps focus and closes from menu buttons', async ({ page }) => {
-    await login(page, 'admin');
+    await login(page, 'guru');
     await page.keyboard.press('/');
     const dialog = page.getByRole('dialog', { name: 'Akses cepat' });
     await expect(dialog.locator('input')).toBeFocused();
@@ -193,17 +191,6 @@ test('command palette traps focus and closes from menu buttons', async ({ page }
     await page.keyboard.press('Tab');
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
-});
-
-test('searchable select opens upward at the last option', async ({ page }) => {
-    await login(page, 'admin');
-    await page.goto('/admin/kelas-mapel');
-    await page.locator('#kelas_id').focus();
-    await page.keyboard.press('ArrowUp');
-    const search = page.getByRole('combobox').first();
-    await expect(search).toBeFocused();
-    await page.keyboard.press('Enter');
-    await expect(page.locator('input[type="hidden"][name="kelas_id"]')).toHaveValue('1');
 });
 
 test('student phone settings validate consent when configured', async ({ page }, testInfo) => {

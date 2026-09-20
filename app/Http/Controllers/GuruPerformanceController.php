@@ -14,8 +14,8 @@ class GuruPerformanceController extends Controller
         return Inertia::render('PerformaGuru/Index', [
             ...$payload,
             'exportUrls' => [
-                'excel' => route(request()->routeIs('admin.*') ? 'admin.performa-guru.export.excel' : 'kepsek.performa-guru.export.excel'),
-                'pdf' => route(request()->routeIs('admin.*') ? 'admin.performa-guru.export.pdf' : 'kepsek.performa-guru.export.pdf'),
+                'excel' => route('admin.performa-guru.export.excel'),
+                'pdf' => route('admin.performa-guru.export.pdf'),
             ],
         ]);
     }

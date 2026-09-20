@@ -10,7 +10,7 @@ class StoreSiswaRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return (bool) ($this->user()?->hasRole(RoleAccess::ADMIN) || $this->user()?->hasRole(RoleAccess::GURU));
+        return (bool) $this->user()?->hasRole(RoleAccess::GURU);
     }
 
     protected function prepareForValidation(): void

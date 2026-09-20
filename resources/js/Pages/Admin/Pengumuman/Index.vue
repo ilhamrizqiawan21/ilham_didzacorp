@@ -29,7 +29,6 @@ const form = useForm({
     public_file: null as File | null,
     remove_public_file: false,
 });
-const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
 const canPublish = computed(() => ['admin', 'guru'].includes(page.props.auth?.user?.role ?? ''));
 
 function resetForm() {
@@ -129,9 +128,7 @@ function remove(item: Announcement) {
                         <div class="col-md-4">
                             <label class="form-label">Target</label>
                             <select v-model="form.target" class="form-select">
-                                <option value="semua">{{ isAdmin ? 'Semua' : 'Semua kelas' }}</option>
-                                <option v-if="isAdmin" value="guru">Guru</option>
-                                <option v-if="isAdmin" value="siswa">Siswa</option>
+                                <option value="semua">Semua kelas</option>
                                 <option value="kelas_mapel">Kelas tertentu</option>
                             </select>
                         </div>

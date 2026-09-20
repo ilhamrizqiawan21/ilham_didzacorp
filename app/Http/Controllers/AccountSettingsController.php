@@ -140,10 +140,8 @@ class AccountSettingsController extends Controller
     private function updateRoute(?string $role): string
     {
         return match ($role) {
-            'admin' => route('admin.pengaturan-akun.update'),
             'guru' => route('guru.pengaturan.update'),
             'siswa' => route('siswa.pengaturan.update'),
-            'kepala_sekolah' => route('kepsek.pengaturan.update'),
             default => url()->current(),
         };
     }
@@ -151,10 +149,8 @@ class AccountSettingsController extends Controller
     private function avatarUpdateRoute(?string $role): string
     {
         return match ($role) {
-            'admin' => route('admin.pengaturan-akun.foto'),
             'guru' => route('guru.pengaturan.foto'),
             'siswa' => route('siswa.pengaturan.foto'),
-            'kepala_sekolah' => route('kepsek.pengaturan.foto'),
             default => url()->current(),
         };
     }
@@ -162,10 +158,8 @@ class AccountSettingsController extends Controller
     private function avatarDeleteRoute(?string $role): string
     {
         return match ($role) {
-            'admin' => route('admin.pengaturan-akun.foto.delete'),
             'guru' => route('guru.pengaturan.foto.delete'),
             'siswa' => route('siswa.pengaturan.foto.delete'),
-            'kepala_sekolah' => route('kepsek.pengaturan.foto.delete'),
             default => url()->current(),
         };
     }
@@ -173,10 +167,8 @@ class AccountSettingsController extends Controller
     private function roleLabel(?string $role): string
     {
         return match ($role) {
-            'admin' => 'Admin',
             'guru' => 'Guru',
             'siswa' => 'Siswa',
-            'kepala_sekolah' => 'Kepala Sekolah',
             default => $role ?: '-',
         };
     }

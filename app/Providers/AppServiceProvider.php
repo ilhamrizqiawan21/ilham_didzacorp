@@ -17,7 +17,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('mengajar', [KelasMapelPolicy::class, 'mengajar']);
         Gate::define('mengajar-tugas', [TugasPolicy::class, 'mengajar']);
         Gate::define('kelola-wali-kelas', [WaliKelasPolicy::class, 'kelola']);
-        Gate::define('lihat-laporan-wali-kelas', [WaliKelasPolicy::class, 'lihatLaporan']);
 
         Inertia::share('timelineEvents', function () {
             $routeName = request()->route()?->getName();
@@ -25,7 +24,6 @@ class AppServiceProvider extends ServiceProvider
                 'admin.kalender',
                 'guru.kalender',
                 'siswa.kalender',
-                'kepsek.kalender',
             ], true)) {
                 return [];
             }

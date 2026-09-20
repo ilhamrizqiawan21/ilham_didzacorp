@@ -367,7 +367,7 @@ class Phase10AuthorizationTest extends TestCase
 
     public function test_admin_student_password_reset_uses_default_password(): void
     {
-        [$admin, , , $kelas] = $this->fixture();
+        [$guru, , , $kelas] = $this->fixture();
         $studentUser = $this->createUser('siswa-reset', 'Siswa Reset', 'siswa');
         $siswa = Siswa::create([
             'user_id' => $studentUser->id,
@@ -376,7 +376,7 @@ class Phase10AuthorizationTest extends TestCase
             'status' => 'aktif',
         ]);
 
-        $this->actingAs($admin)
+        $this->actingAs($guru)
             ->post(route('admin.kelas-siswa.reset-password', $siswa))
             ->assertRedirect()
             ->assertSessionHas('student_password');
@@ -409,18 +409,16 @@ class Phase10AuthorizationTest extends TestCase
 
     private function fixture(): array
     {
-        Role::create(['nama_role' => 'admin']);
         Role::create(['nama_role' => 'guru']);
         Role::create(['nama_role' => 'siswa']);
-        Role::create(['nama_role' => 'kepala_sekolah']);
 
-        $admin = $this->createUser('admin-phase10', 'Admin Phase 10', 'admin');
+        $guru = $this->createUser('guru-manager-phase10', 'Guru Manager Phase 10', 'guru');
         $guruA = $this->createUser('guru-a-phase10', 'Guru A', 'guru');
         $guruB = $this->createUser('guru-b-phase10', 'Guru B', 'guru');
         $kelas = Kelas::create(['tingkat' => 'VII', 'nama_kelas' => 'A']);
         $tahunAjaran = TahunAjaran::create(['tahun' => '2026/2027', 'is_active' => true]);
 
-        return [$admin, $guruA, $guruB, $kelas, $tahunAjaran];
+        return [$guru, $guruA, $guruB, $kelas, $tahunAjaran];
     }
 
     private function createUser(string $username, string $namaLengkap, string $roleName): User
