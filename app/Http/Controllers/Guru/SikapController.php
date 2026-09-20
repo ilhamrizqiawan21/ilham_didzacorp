@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Guru\RekapSikapRequest;
 use App\Http\Requests\Guru\StoreBulkSikapRequest;
 use App\Http\Requests\Guru\StoreSikapRequest;
 use App\Models\KelasMapel;
@@ -141,66 +140,6 @@ class SikapController extends Controller
 
         return redirect()->route('guru.sikap.index')
             ->with('success', 'Nilai sikap berhasil disimpan untuk kelas yang dipilih.');
-    }
-
-    // Bahan untuk merekap nilai sikap siswa per kelas dan mata pelajaran yang diampu oleh guru
-    public function rekap(RekapSikapRequest $request)
-    {
-        $kelasMapel = KelasMapel::with(['kelas', 'mataPelajaran'])
-            ->where('guru_id', Auth::id())
-            ->aktif()
-            ->get();
-
-        $tahunAjaran = TahunAjaran::getAktif();
-        $semester = $request->input('semester', Pengaturan::getValue('semester_aktif', '1'));
-
-        $kmId = $request->input('kelas_mapel_id');
-
-        // Sikap Sosial
-        $soFields = ['empati', 'kerjasama', 'toleransi', 'percaya_diri', 'komunikasi'];
-        $sosialQuery = SikapSosial::with(['siswa.user', 'siswa.kelas', 'kelasMapel.mataPelajaran'])
-            ->where('tahun_ajaran_id', $tahunAjaran?->id)
-            ->where('semester', $semester)
-            ->whereHas('kelasMapel', fn ($q) => $q->where('guru_id', Auth::id())->aktif($semester));
-
-        if ($kmId) {
-            $sosialQuery->where('kelas_mapel_id', $kmId);
-        }
-
-        $sikapSosial = $sosialQuery->get()->groupBy('siswa_id')->map(function ($records) use ($soFields) {
-            $first = $records->first();
-            $avg = [];
-            foreach ($soFields as $f) {
-                $avg[$f] = round($records->avg($f), 1);
-            }
-            $avg['rata'] = round(array_sum($avg) / count($soFields), 1);
-
-            return ['siswa' => $first->siswa] + $avg;
-        })->values();
-
-        // Sikap Spiritual
-        $spFields = ['taqwa', 'kejujuran', 'disiplin', 'sabar', 'syukur', 'tawadhu'];
-        $spiritualQuery = SikapSpiritual::with(['siswa.user', 'siswa.kelas', 'kelasMapel.mataPelajaran'])
-            ->where('tahun_ajaran_id', $tahunAjaran?->id)
-            ->where('semester', $semester)
-            ->whereHas('kelasMapel', fn ($q) => $q->where('guru_id', Auth::id())->aktif($semester));
-
-        if ($kmId) {
-            $spiritualQuery->where('kelas_mapel_id', $kmId);
-        }
-
-        $sikapSpiritual = $spiritualQuery->get()->groupBy('siswa_id')->map(function ($records) use ($spFields) {
-            $first = $records->first();
-            $avg = [];
-            foreach ($spFields as $f) {
-                $avg[$f] = round($records->avg($f), 1);
-            }
-            $avg['rata'] = round(array_sum($avg) / count($spFields), 1);
-
-            return ['siswa' => $first->siswa] + $avg;
-        })->values();
-
-        return view('guru.rekap-sikap', compact('sikapSosial', 'sikapSpiritual', 'kelasMapel', 'semester'));
     }
 
     private function buildSikapGroup(KelasMapel $kelasMapel, ?TahunAjaran $tahunAjaran, string $semester): array

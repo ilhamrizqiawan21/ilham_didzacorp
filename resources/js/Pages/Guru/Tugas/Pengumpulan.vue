@@ -63,16 +63,40 @@ function statusLabel(status: SubmissionStatus): string {
 
 async function prepareWhatsApp(item: AssignmentSubmission): Promise<void> {
     if (!item.whatsapp_url) return;
-    const response = await fetch(item.whatsapp_url, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
-    if (!response.ok) {
-        const error = await response.json().catch(() => null) as { message?: string } | null;
-        window.showToast?.(error?.message ?? 'Nomor WhatsApp belum valid atau belum disetujui.', 'error');
-        return;
+    // Open a blank tab from the user click first so browser popup blockers do
+    // not block WhatsApp while the message is being prepared by the server.
+    const popup = window.open('', '_blank');
+    const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+
+    try {
+        const response = await fetch(item.whatsapp_url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+        });
+        if (!response.ok) {
+            popup?.close();
+            const error = await response.json().catch(() => null) as { message?: string } | null;
+            window.showToast?.(error?.message ?? 'Nomor WhatsApp belum valid atau belum disetujui.', 'error');
+            return;
+        }
+
+        const data = await response.json() as { url: string; log_id: number };
+        if (popup) {
+            popup.location.href = data.url;
+        } else {
+            window.open(data.url, '_blank', 'noopener,noreferrer');
+        }
+        const confirmed = await window.confirmDialog?.('Sudah menekan tombol kirim di WhatsApp?', { title: 'Tandai Pengingat', confirmText: 'Ya, sudah dikirim' });
+        if (confirmed) router.post(`/guru/tugas/whatsapp/${data.log_id}/mark-sent`, {}, { preserveScroll: true });
+    } catch {
+        popup?.close();
+        window.showToast?.('Pengingat WhatsApp gagal disiapkan. Coba lagi.', 'error');
     }
-    const data = await response.json() as { url: string; log_id: number };
-    window.open(data.url, '_blank', 'noopener,noreferrer');
-    const confirmed = await window.confirmDialog?.('Sudah menekan tombol kirim di WhatsApp?', { title: 'Tandai Pengingat', confirmText: 'Ya, sudah dikirim' });
-    if (confirmed) router.post(`/guru/tugas/whatsapp/${data.log_id}/mark-sent`, {}, { preserveScroll: true });
 }
 </script>
 

@@ -10,9 +10,33 @@ class SecurityHeaders
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // Make the nonce available to the Blade layouts before they render.
+        // This permits the small bootstrap theme script without enabling all
+        // inline scripts through `unsafe-inline`.
+        $nonce = base64_encode(random_bytes(16));
+        $request->attributes->set('csp_nonce', $nonce);
+        app()->instance('csp_nonce', $nonce);
+
         $response = $next($request);
 
-        $response->headers->set('Content-Security-Policy', "base-uri 'self'; form-action 'self'; frame-ancestors 'self'; object-src 'none'; upgrade-insecure-requests");
+        $contentSecurityPolicy = implode('; ', [
+            "default-src 'self'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'self'",
+            "object-src 'none'",
+            "script-src 'self' 'nonce-{$nonce}' https://cdn.jsdelivr.net",
+            "script-src-attr 'none'",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
+            "img-src 'self' data: blob: https:",
+            "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net",
+            "connect-src 'self'",
+            "frame-src 'self'",
+            "worker-src 'self' blob:",
+            "manifest-src 'self'",
+            'upgrade-insecure-requests',
+        ]);
+        $response->headers->set('Content-Security-Policy', $contentSecurityPolicy);
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');

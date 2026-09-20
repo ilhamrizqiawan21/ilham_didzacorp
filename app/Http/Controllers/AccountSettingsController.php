@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\UploadRules;
 use App\Support\WhatsAppPhone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -104,9 +105,10 @@ class AccountSettingsController extends Controller
     public function uploadAvatar(Request $request)
     {
         $validated = $request->validate([
-            'foto' => 'required|file|mimes:jpg,jpeg,png,webp|extensions:jpg,jpeg,png,webp|max:2048',
+            'foto' => UploadRules::image(),
         ], [
-            'foto.extensions' => 'Foto harus berupa file .jpg, .jpeg, .png, atau .webp.',
+            'foto.mimes' => 'Isi file foto tidak valid. Gunakan JPG, JPEG, atau PNG.',
+            'foto.extensions' => 'Foto harus berupa file .jpg, .jpeg, atau .png.',
             'foto.max' => 'Ukuran foto maksimal 2MB.',
         ]);
 

@@ -17,6 +17,9 @@ const props = defineProps({
 
 const selectedKelas = ref(new URLSearchParams(window.location.search).get('kelas_mapel_id') || '');
 const selectedSemester = ref(props.semester);
+const exportUrl = (format: 'excel' | 'pdf') => selectedKelas.value
+    ? `/guru/rekap-nilai/export/${format}?kelas_mapel_id=${selectedKelas.value}&semester=${selectedSemester.value}`
+    : '#';
 
 function filter() {
     router.get('/guru/rekap-nilai', { kelas_mapel_id: selectedKelas.value || undefined, semester: selectedSemester.value }, { preserveState: true, replace: true });
@@ -61,6 +64,14 @@ function page(pageNumber: number) {
                 </div>
                 <div class="col-12 col-md-2 d-grid">
                     <button class="btn btn-outline-secondary" type="button" @click="reset">Reset</button>
+                </div>
+                <div class="col-12 d-flex justify-content-end gap-2">
+                    <a class="btn btn-outline-success" :class="{ disabled: !selectedKelas }" :href="exportUrl('excel')" :aria-disabled="!selectedKelas">
+                        <i class="bi bi-file-earmark-excel me-1" aria-hidden="true"></i>Excel
+                    </a>
+                    <a class="btn btn-outline-danger" :class="{ disabled: !selectedKelas }" :href="exportUrl('pdf')" :aria-disabled="!selectedKelas">
+                        <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>PDF
+                    </a>
                 </div>
             </form>
         </Card>

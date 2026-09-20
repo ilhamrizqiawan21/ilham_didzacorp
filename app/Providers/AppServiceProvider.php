@@ -2,14 +2,9 @@
 
 namespace App\Providers;
 
-use App\Models\KelasMapel;
 use App\Policies\KelasMapelPolicy;
 use App\Policies\TugasPolicy;
 use App\Policies\WaliKelasPolicy;
-use App\Http\Controllers\Guru\NilaiController;
-use App\Http\Controllers\Guru\NilaiRekapController;
-use App\Http\Controllers\Guru\SikapController;
-use App\Http\Controllers\Guru\SikapRekapController;
 use App\Services\CalendarTimelineService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -17,13 +12,6 @@ use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-        // The existing route names are kept stable while the recap endpoints are migrated to Inertia.
-        $this->app->bind(NilaiController::class, fn ($app) => $app->make(NilaiRekapController::class));
-        $this->app->bind(SikapController::class, fn ($app) => $app->make(SikapRekapController::class));
-    }
-
     public function boot(): void
     {
         Gate::define('mengajar', [KelasMapelPolicy::class, 'mengajar']);
@@ -33,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
 
         Inertia::share('timelineEvents', function () {
             $routeName = request()->route()?->getName();
-            if (!request()->user() || !in_array($routeName, [
+            if (! request()->user() || ! in_array($routeName, [
                 'admin.kalender',
                 'guru.kalender',
                 'siswa.kalender',

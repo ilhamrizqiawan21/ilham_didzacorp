@@ -306,7 +306,7 @@ class Phase10AuthorizationTest extends TestCase
         ]);
 
         $response = $this->actingAs($guru)
-            ->getJson(route('guru.tugas.whatsapp', [$kelasMapel, $tugas, $student]))
+            ->postJson(route('guru.tugas.whatsapp', [$kelasMapel, $tugas, $student]))
             ->assertOk();
         $this->assertStringStartsWith('https://wa.me/6281234567890?text=', $response->json('url'));
 
@@ -317,6 +317,52 @@ class Phase10AuthorizationTest extends TestCase
         ]);
         $this->assertSame('6281234567890', $student->fresh()->nomor_whatsapp);
         $this->assertInstanceOf(WhatsAppMessageLog::class, WhatsAppMessageLog::latest()->first());
+    }
+
+    public function test_whatsapp_reminder_rejects_without_consent_and_does_not_create_empty_log(): void
+    {
+        [, $guru, , $kelas, $tahunAjaran] = $this->fixture();
+        $mapel = MataPelajaran::create(['kode' => 'WAB', 'nama_mapel' => 'WhatsApp Boundary', 'urutan' => 1]);
+        $kelasMapel = KelasMapel::create([
+            'kelas_id' => $kelas->id,
+            'mapel_id' => $mapel->id,
+            'guru_id' => $guru->id,
+            'tahun_ajaran_id' => $tahunAjaran->id,
+            'semester' => '1',
+            'pertemuan_per_minggu' => 1,
+        ]);
+        $tugas = Tugas::create(['kelas_mapel_id' => $kelasMapel->id, 'judul' => 'Pengingat Boundary', 'batas_waktu' => now()->subDays(2), 'kategori_nilai' => 'NH']);
+        $studentUser = $this->createUser('siswa-wa-boundary', 'Siswa WA Boundary', 'siswa');
+        $student = Siswa::create([
+            'user_id' => $studentUser->id,
+            'nis' => '9302',
+            'kelas_id' => $kelas->id,
+            'status' => 'aktif',
+            'nomor_whatsapp' => '081234567890',
+            'whatsapp_opt_in' => false,
+        ]);
+
+        $this->actingAs($guru)
+            ->postJson(route('guru.tugas.whatsapp', [$kelasMapel, $tugas, $student]))
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Siswa belum menyetujui menerima informasi melalui WhatsApp.');
+
+        $this->assertDatabaseCount('whatsapp_message_logs', 0);
+
+        $student->update(['whatsapp_opt_in' => true]);
+        PengumpulanTugas::create([
+            'tugas_id' => $tugas->id,
+            'siswa_id' => $student->id,
+            'status' => PengumpulanTugas::STATUS_SUDAH,
+            'tanggal_kumpul' => now()->subDay(),
+        ]);
+
+        $this->actingAs($guru)
+            ->postJson(route('guru.tugas.whatsapp', [$kelasMapel, $tugas, $student]))
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Tidak ada tugas terlambat yang perlu diingatkan.');
+
+        $this->assertDatabaseCount('whatsapp_message_logs', 0);
     }
 
     public function test_admin_student_password_reset_uses_default_password(): void

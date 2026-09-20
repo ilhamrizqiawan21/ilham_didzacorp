@@ -5,7 +5,7 @@ import { computed } from 'vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
-    branding: { type: Object as PropType<{ school_short_name: string; school_name: string; school_motto: string; school_address: string; logo_url: string; support_contact: string | null }>, required: true },
+    branding: { type: Object as PropType<{ school_short_name: string; school_name: string; school_motto: string; school_address: string; logo_url: string; support_contact: string | null; support_whatsapp_url: string | null }>, required: true },
     loginUrl: { type: String, required: true },
     publicAnnouncements: { type: Array as PropType<{ id: number; judul: string; isi: string; creator_name: string | null; created_at: string | null; attachment: { url: string; name: string; size: number | null } | null }[]>, default: () => [] },
     year: { type: [String, Number], required: true },
@@ -21,17 +21,13 @@ const form = useForm({
 const flash = computed(() => page.props.flash ?? {});
 const title = computed(() => `Login - ${props.branding.school_short_name} ${props.branding.school_name}`);
 const forgotPasswordUrl = computed(() => {
-    const rawContact = String(props.branding.support_contact ?? '').replace(/[^\d+]/g, '');
-
-    if (!rawContact) {
+    if (!props.branding.support_whatsapp_url) {
         return null;
     }
 
-    const digits = rawContact.replace(/\D/g, '');
-    const whatsappNumber = digits.startsWith('0') ? `62${digits.slice(1)}` : digits;
     const message = encodeURIComponent('Assalamu\'alaikum, saya lupa password. Mohon bantu saya. Nama: ........ Kelas: .........');
 
-    return `https://wa.me/${whatsappNumber}?text=${message}`;
+    return `${props.branding.support_whatsapp_url}?text=${message}`;
 });
 
 function formatDate(value: string | null) {

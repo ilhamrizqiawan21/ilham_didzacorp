@@ -117,11 +117,11 @@ function submit() {
     <Head title="Detail Tugas" />
 
     <AppShell title="Detail Tugas">
-        <PageHeader title="Detail Tugas" icon="bi-journal-fill" />
+        <PageHeader title="Detail Tugas" icon="bi-journal-check" />
 
         <div class="row">
             <div class="col-md-8">
-                <Card :title="tugas.judul" icon="bi-journal-fill" class="mb-3">
+            <Card :title="tugas.judul" icon="bi-journal-check" class="mb-3">
                     <template #actions>
                         <Badge color="secondary">{{ tugas.kategori_nilai }}</Badge>
                     </template>
@@ -199,8 +199,8 @@ function submit() {
                             v-model="form.files"
                             name="files[]"
                             label="Upload File"
-                            accept=".jpg,.jpeg,.pdf,image/jpeg,application/pdf"
-                            accept-label="JPG, JPEG, PDF"
+                            accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                            accept-label="JPG, JPEG, PNG, PDF"
                             max-size="5MB"
                             multiple
                             help="Opsional jika jawaban dikirim lewat teks."

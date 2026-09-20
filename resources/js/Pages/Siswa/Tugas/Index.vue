@@ -44,7 +44,7 @@ function statusLabel(status: string | null) {
             </template>
         </DashboardHero>
 
-        <Card title="Daftar Tugas" icon="bi-journal-fill" body-class="p-0">
+        <Card title="Daftar Tugas" icon="bi-journal-check" body-class="p-0">
             <div v-if="tugas.length" class="p-3 border-bottom bg-light-subtle">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <span class="text-muted small">Tugas yang sudah dikumpulkan dan yang masih menunggu.</span>

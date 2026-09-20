@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import type { PropType } from 'vue';
 type SchoolField = 'school_name' | 'school_short_name' | 'address' | 'village' | 'district' | 'city' | 'province' | 'postal_code' | 'phone' | 'whatsapp' | 'email' | 'website' | 'npsn' | 'nsm' | 'accreditation' | 'school_status' | 'principal_name' | 'principal_nip' | 'principal_nuptk' | 'foundation_name' | 'school_year' | 'semester' | 'vision' | 'mission' | 'motto' | 'logo_url' | 'favicon_url';
+type TeachingConfig = {
+    guru: { id: number; nama: string; username: string } | null;
+    mapel: { id: number; kode: string | null; nama_mapel: string }[];
+    selected_mapel_ids: number[];
+    kelas: { id: number; tingkat: string | number; nama_kelas: string }[];
+    wali_kelas_id: number | null;
+};
 import { Head, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import PageHeader from '../../../Components/AppShell/PageHeader.vue';
@@ -12,7 +19,8 @@ const props = defineProps({
     settings: { type: Object as PropType<Partial<Record<'warna_tema' | 'semester_aktif' | 'mode_kenaikan' | 'penalty_terlambat_poin' | 'whatsapp_template_tugas_terlambat', string>>>, default: () => ({}) },
     tahunAjaranAktif: { type: Object as PropType<{ tahun: string } | null>, default: null },
     schoolSetting: { type: Object as PropType<Record<SchoolField, string | null>>, required: true },
-    urls: { type: Object as PropType<Record<'tahun_ajaran' | 'blocked_ips' | 'save_system' | 'save_school', string>>, required: true },
+    urls: { type: Object as PropType<Record<'tahun_ajaran' | 'blocked_ips' | 'save_system' | 'save_school' | 'save_teaching', string>>, required: true },
+    teaching: { type: Object as PropType<TeachingConfig>, default: () => ({ guru: null, mapel: [], selected_mapel_ids: [], kelas: [], wali_kelas_id: null }) },
 });
 
 const themeOptions = [
@@ -61,6 +69,12 @@ const schoolForm = useForm({
     favicon: null as File | null,
 });
 
+const teachingForm = useForm({
+    guru_id: (props.teaching.guru?.id ?? null) as number | null,
+    mapel_ids: [...(props.teaching.selected_mapel_ids ?? [])],
+    wali_kelas_id: (props.teaching.wali_kelas_id ?? null) as number | null,
+});
+
 const metrics = computed(() => [
     { label: 'Tema', value: themeOptions.find((theme) => theme.value === systemForm.warna_tema)?.label ?? 'Default', icon: 'bi-palette', tone: 'primary' },
     { label: 'Semester LMS', value: `Semester ${systemForm.semester_aktif}`, icon: 'bi-calendar3', tone: 'info' },
@@ -103,6 +117,11 @@ function saveSchool() {
                 schoolForm.favicon = null;
             },
         });
+}
+
+function saveTeaching() {
+    if (teachingForm.processing || !teachingForm.guru_id) return;
+    teachingForm.post(props.urls.save_teaching, { preserveScroll: true });
 }
 </script>
 
@@ -176,11 +195,11 @@ function saveSchool() {
                                 <span>{{ schoolForm.school_name || '-' }}</span>
                             </div>
                         </div>
-                        <FileInput v-model="schoolForm.logo" name="logo" label="Logo" accept=".jpg,.jpeg,.png,.webp" accept-label="JPG, PNG, WEBP" max-size="2MB" :error="schoolForm.errors.logo" />
+                        <FileInput v-model="schoolForm.logo" name="logo" label="Logo" accept=".jpg,.jpeg,.png" accept-label="JPG, JPEG, PNG" max-size="2MB" :error="schoolForm.errors.logo" />
                         <div class="favicon-preview">
                             <img v-if="schoolSetting.favicon_url" :src="schoolSetting.favicon_url" alt="Favicon sekolah" width="28" height="28" decoding="async">
                             <i v-else class="bi bi-bookmark-star" aria-hidden="true"></i>
-                            <FileInput v-model="schoolForm.favicon" name="favicon" label="Favicon" accept=".ico,.png,.jpg,.jpeg,.webp" accept-label="ICO, PNG, JPG, WEBP" max-size="1MB" :error="schoolForm.errors.favicon" wrapper-class="mb-0 flex-fill" />
+                        <FileInput v-model="schoolForm.favicon" name="favicon" label="Favicon" accept=".ico,.png,.jpg,.jpeg" accept-label="ICO, JPG, JPEG, PNG" max-size="1MB" :error="schoolForm.errors.favicon" wrapper-class="mb-0 flex-fill" />
                         </div>
                     </Card>
                 </aside>
@@ -252,6 +271,49 @@ function saveSchool() {
                 </aside>
             </div>
         </form>
+
+        <section class="workspace-panel mb-4">
+            <header class="workspace-panel-header">
+                <span class="workspace-panel-title"><i class="bi bi-person-workspace" aria-hidden="true"></i>Guru dan Wali Kelas</span>
+                <Button type="button" color="primary" icon="bi-save" :disabled="teachingForm.processing || !teachingForm.guru_id" @click="saveTeaching">
+                    {{ teachingForm.processing ? 'Menyimpan...' : 'Simpan Pengaturan' }}
+                </Button>
+            </header>
+            <div class="workspace-panel-body">
+                <div v-if="!teaching.guru" class="alert alert-warning mb-0">Belum ada guru aktif yang dapat dikonfigurasi.</div>
+                <template v-else>
+                    <div class="row g-4">
+                        <div class="col-md-5">
+                            <label class="form-label">Guru Utama</label>
+                            <div class="form-control bg-light">{{ teaching.guru.nama }} <span class="text-muted">(@{{ teaching.guru.username }})</span></div>
+                            <div class="form-text">Project ini menggunakan satu guru utama.</div>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label">Kelas Wali <span class="text-muted">(opsional)</span></label>
+                            <select v-model="teachingForm.wali_kelas_id" class="form-select" :class="{ 'is-invalid': teachingForm.errors.wali_kelas_id }">
+                                <option :value="null">Bukan wali kelas</option>
+                                <option v-for="kelas in teaching.kelas" :key="kelas.id" :value="kelas.id">{{ kelas.nama_kelas }}</option>
+                            </select>
+                            <div class="form-text">Jika dipilih, menu Wali Kelas muncul di sidebar guru.</div>
+                            <div v-if="teachingForm.errors.wali_kelas_id" class="invalid-feedback">{{ teachingForm.errors.wali_kelas_id }}</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Mata Pelajaran yang Diajar</label>
+                            <div class="row row-cols-1 row-cols-md-3 g-2">
+                                <div v-for="mapel in teaching.mapel" :key="mapel.id" class="col">
+                                    <label class="form-check border rounded p-2 h-100">
+                                        <input v-model="teachingForm.mapel_ids" class="form-check-input ms-0 me-2" type="checkbox" :value="mapel.id">
+                                        <span class="form-check-label">{{ mapel.nama_mapel }} <small v-if="mapel.kode" class="text-muted">({{ mapel.kode }})</small></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div v-if="teachingForm.errors.mapel_ids" class="text-danger small mt-2">{{ teachingForm.errors.mapel_ids }}</div>
+                            <div class="form-text">Checklist mata pelajaran yang digunakan guru utama. Data lama tidak dihapus.</div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </section>
 
         <section class="workspace-panel">
             <header class="workspace-panel-header">

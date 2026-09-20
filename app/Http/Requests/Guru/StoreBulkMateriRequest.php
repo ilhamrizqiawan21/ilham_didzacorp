@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Guru;
 
+use App\Support\UploadRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBulkMateriRequest extends FormRequest
@@ -18,7 +19,7 @@ class StoreBulkMateriRequest extends FormRequest
             'kelas_mapel_ids.*' => ['integer'],
             'judul' => ['required', 'string', 'max:200'],
             'deskripsi' => ['nullable', 'string'],
-            'file_materi' => ['required', 'file', 'extensions:jpg,jpeg,pdf', 'max:5120'],
+            'file_materi' => UploadRules::document(),
         ];
     }
 }

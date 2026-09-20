@@ -71,7 +71,8 @@ final class ExcelReportWriter
             $sheet->setColumnWidth(30, 3);
         }
         if ($columnCount > 3) {
-            $sheet->setColumnWidthForRange(14, 4, $columnCount);
+            $sheet->setColumnWidthForRange(22, 4, $columnCount - 1);
+            $sheet->setColumnWidth(14, $columnCount);
         }
     }
 
@@ -79,7 +80,9 @@ final class ExcelReportWriter
     {
         $lastColumn = max(0, $columnCount - 1);
 
-        foreach ([1, 2, 3, 4] as $row) {
+        // Baris 3 berisi metadata dalam beberapa kolom, jadi tidak boleh
+        // digabung agar Tahun Ajaran dan Semester tetap terlihat terpisah.
+        foreach ([1, 2, 4] as $row) {
             $writer->getOptions()->mergeCells(0, $row, $lastColumn, $row);
         }
     }

@@ -90,8 +90,8 @@ async function destroy(item: MateriItem): Promise<void> {
                             v-model="form.file_materi"
                             name="file_materi"
                             label="File Materi"
-                            accept=".jpg,.jpeg,.pdf,image/jpeg,application/pdf"
-                            accept-label="JPG, JPEG, PDF"
+                            accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                            accept-label="JPG, JPEG, PNG, PDF"
                             max-size="5MB"
                             required
                             :error="form.errors.file_materi"

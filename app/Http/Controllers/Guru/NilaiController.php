@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Guru\RekapNilaiRequest;
 use App\Http\Requests\Guru\StoreBulkNilaiRequest;
 use App\Http\Requests\Guru\StoreNilaiRequest;
 use App\Models\AcademicAuditLog;
@@ -139,31 +138,6 @@ class NilaiController extends Controller
 
         return redirect()->route('guru.nilai.index')
             ->with('success', 'Nilai berhasil disimpan untuk kelas yang dipilih.');
-    }
-
-    // Bahan untuk merekap nilai siswa per kelas dan mata pelajaran yang diampu oleh guru
-    public function rekap(RekapNilaiRequest $request)
-    {
-        $kelasMapel = KelasMapel::with(['kelas', 'mataPelajaran'])
-            ->where('guru_id', Auth::id())
-            ->aktif()
-            ->get();
-
-        $tahunAjaran = TahunAjaran::getAktif();
-        $semester = $request->input('semester', Pengaturan::getValue('semester_aktif', '1'));
-
-        $query = NilaiAkhir::with(['siswa.user', 'siswa.kelas', 'kelasMapel.mataPelajaran'])
-            ->where('tahun_ajaran_id', $tahunAjaran?->id)
-            ->where('semester', $semester)
-            ->whereHas('kelasMapel', fn ($q) => $q->where('guru_id', Auth::id())->aktif($semester));
-
-        if ($request->filled('kelas_mapel_id')) {
-            $query->where('kelas_mapel_id', $request->kelas_mapel_id);
-        }
-
-        $nilai = $query->orderBy('rata_akhir', 'desc')->paginate(30);
-
-        return view('guru.rekap-nilai', compact('nilai', 'kelasMapel', 'semester'));
     }
 
     private function buildNilaiGroup(KelasMapel $kelasMapel, ?TahunAjaran $tahunAjaran, string $semester, array $fields): array

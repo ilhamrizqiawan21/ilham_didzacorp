@@ -6,12 +6,41 @@ use App\Models\KelasMapel;
 use App\Models\NilaiAkhir;
 use App\Models\Pengaturan;
 use App\Models\TahunAjaran;
+use App\Services\Reports\Exports\NilaiExportService;
+use App\Http\Controllers\ExportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class NilaiRekapController extends NilaiController
 {
+    public function exportExcel(Request $request, NilaiExportService $exportService)
+    {
+        $kelasMapel = $this->authorizedKelasMapel($request);
+        [$path, $filename] = $exportService->export($kelasMapel->kelas_id, (string) $request->input('semester', Pengaturan::getValue('semester_aktif', '1')));
+        return response()->download($path, $filename)->deleteFileAfterSend(true);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $kelasMapel = $this->authorizedKelasMapel($request);
+        $request->merge(['kelas_id' => $kelasMapel->kelas_id]);
+        return app(ExportController::class)->pdfNilai($request);
+    }
+
+    private function authorizedKelasMapel(Request $request): KelasMapel
+    {
+        $validated = $request->validate([
+            'kelas_mapel_id' => ['required', 'integer'],
+            'semester' => ['nullable', 'in:1,2'],
+        ]);
+
+        return KelasMapel::whereKey($validated['kelas_mapel_id'])
+            ->where('guru_id', Auth::id())
+            ->aktif((string) ($validated['semester'] ?? Pengaturan::getValue('semester_aktif', '1')))
+            ->firstOrFail();
+    }
+
     public function rekap(Request $request)
     {
         $request->validate([

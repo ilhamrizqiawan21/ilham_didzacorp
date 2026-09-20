@@ -8,6 +8,7 @@ use App\Models\PengumpulanTugas;
 use App\Models\Siswa;
 use App\Models\Tugas;
 use App\Services\NotifikasiService;
+use App\Support\UploadRules;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,18 +24,9 @@ class TugasController extends Controller
 
     private const UPLOAD_TOTAL_MAX_KB = 20480;
 
-    private const UPLOAD_EXTENSIONS = 'jpg,jpeg,pdf';
-
-    /**
-     * Aturan validasi satu file tugas.
-     * Sengaja TANPA validasi MIME/konten (mimetypes/mimes) karena tebakan
-     * MIME server tidak konsisten antar perangkat dan sering menolak file
-     * .jpg/.pdf yang sah walau ukurannya di bawah batas. Cukup validasi
-     * ekstensi + ukuran, konsisten dengan validasi di sisi frontend.
-     */
     public static function uploadFileRules(): string
     {
-        return 'nullable|file|extensions:'.self::UPLOAD_EXTENSIONS.'|max:'.self::UPLOAD_MAX_KB;
+        return implode('|', UploadRules::document(self::UPLOAD_MAX_KB, true));
     }
 
     public function index()
@@ -137,12 +129,14 @@ class TugasController extends Controller
             'teks_jawaban' => 'nullable|string|max:5000',
         ], [
             'file_upload.file' => 'Upload harus berupa file.',
-            'file_upload.extensions' => 'Ekstensi file harus .jpg, .jpeg, atau .pdf.',
+            'file_upload.mimes' => 'Isi file harus berupa JPG, JPEG, PNG, atau PDF yang valid.',
+            'file_upload.extensions' => 'Ekstensi file harus .jpg, .jpeg, .png, atau .pdf.',
             'file_upload.max' => 'Ukuran file maksimal 5MB.',
             'files.array' => 'Upload file tidak valid. Silakan pilih file ulang.',
             'files.max' => 'Maksimal '.self::MAX_UPLOAD_FILES.' file untuk satu pengumpulan tugas.',
             'files.*.file' => 'Upload harus berupa file.',
-            'files.*.extensions' => 'Ekstensi file harus .jpg, .jpeg, atau .pdf.',
+            'files.*.mimes' => 'Isi file harus berupa JPG, JPEG, PNG, atau PDF yang valid.',
+            'files.*.extensions' => 'Ekstensi file harus .jpg, .jpeg, .png, atau .pdf.',
             'files.*.max' => 'Ukuran setiap file maksimal 5MB.',
         ]);
 

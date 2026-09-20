@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\LogLogin;
 use App\Models\Pengumuman;
+use App\Support\WhatsAppPhone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -18,6 +19,8 @@ class LoginController extends Controller
     public function showLogin()
     {
         $publicAnnouncements = collect();
+        $supportContact = school_setting('whatsapp') ?: school_setting('phone');
+        $supportPhone = WhatsAppPhone::normalize((string) $supportContact);
 
         if (Schema::hasTable('pengumuman') && Schema::hasColumn('pengumuman', 'is_public_login')) {
             $publicAnnouncements = Pengumuman::with('creator')
@@ -45,7 +48,8 @@ class LoginController extends Controller
                 'school_short_name' => school_setting('school_short_name', 'LMS'),
                 'school_motto' => school_setting('motto', 'Learning Management System'),
                 'school_address' => school_setting('address', 'Alamat sekolah belum diatur'),
-                'support_contact' => school_setting('whatsapp') ?: school_setting('phone'),
+                'support_contact' => $supportContact,
+                'support_whatsapp_url' => $supportPhone ? 'https://wa.me/'.$supportPhone : null,
                 'logo_url' => school_logo_url(),
             ],
             'loginUrl' => route('login.post'),

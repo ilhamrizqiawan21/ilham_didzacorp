@@ -70,7 +70,7 @@ class KelasMapelWorkspaceController extends Controller
             'metrics' => [
                 ['label' => 'Siswa aktif', 'value' => $totalSiswa, 'icon' => 'bi-people-fill', 'tone' => 'info'],
                 ['label' => 'Materi', 'value' => $totalMateri, 'icon' => 'bi-file-earmark-text-fill', 'tone' => 'primary', 'href' => route('guru.materi.list', $kelasMapel)],
-                ['label' => 'Tugas', 'value' => $totalTugas, 'icon' => 'bi-journal-fill', 'tone' => 'warning', 'href' => route('guru.tugas.list', $kelasMapel)],
+                ['label' => 'Tugas', 'value' => $totalTugas, 'icon' => 'bi-journal-check', 'tone' => 'warning', 'href' => route('guru.tugas.list', $kelasMapel)],
                 ['label' => 'Perlu dinilai', 'value' => $perluDinilai, 'icon' => 'bi-pencil-square', 'tone' => 'danger', 'href' => route('guru.tugas.list', $kelasMapel)],
             ],
             'tasks' => $recentTasks->map(fn (Tugas $tugas) => [

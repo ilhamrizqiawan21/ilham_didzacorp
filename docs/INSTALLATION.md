@@ -131,11 +131,10 @@ Asset entry utama:
 
 ```text
 resources/css/app.css
-resources/js/app.ts
 resources/js/inertia.ts
 ```
 
-`resources/js/app.ts` dipakai layout Blade legacy untuk Bootstrap, sidebar, confirm dialog, dan loading submit. `resources/js/inertia.ts` memuat app Inertia + Vue untuk halaman yang sudah dimigrasikan.
+`resources/js/inertia.ts` memuat aplikasi Inertia + Vue. Blade dipakai untuk root Inertia, halaman error, dan template dokumen PDF; seluruh halaman aplikasi utama menggunakan shell Vue.
 
 ## Storage Link
 

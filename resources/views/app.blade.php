@@ -51,7 +51,7 @@
     <meta name="application-name" content="{{ $inertiaAppName }}">
     <meta name="theme-color" content="{{ $inertiaActiveTheme['primary'] }}">
     <title inertia>{{ $inertiaAppName }} - {{ $inertiaSchoolName }}</title>
-    <script>
+    <script nonce="{{ app('csp_nonce') }}">
         (() => {
             const key = 'lms.color-mode';
             const stored = (() => {

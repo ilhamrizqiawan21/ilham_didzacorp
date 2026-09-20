@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SchoolSetting;
+use App\Support\UploadRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,8 +43,10 @@ class SchoolSettingController extends Controller
             'vision' => 'nullable|string',
             'mission' => 'nullable|string',
             'motto' => 'nullable|string|max:255',
-            'logo' => 'nullable|file|mimes:jpg,jpeg,png,webp|extensions:jpg,jpeg,png,webp|max:2048',
-            'favicon' => 'nullable|file|mimes:ico,png,jpg,jpeg,webp|extensions:ico,png,jpg,jpeg,webp|max:1024',
+            'logo' => UploadRules::image(2048, true),
+            // ICO remains a deliberate exception because it is the native
+            // favicon format; raster uploads stay within JPG/JPEG/PNG.
+            'favicon' => 'nullable|file|mimes:ico,png,jpg,jpeg|extensions:ico,png,jpg,jpeg|max:1024',
         ]);
 
         unset($data['logo'], $data['favicon']);

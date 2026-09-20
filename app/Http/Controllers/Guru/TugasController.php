@@ -251,9 +251,12 @@ class TugasController extends Controller
             'pengumpulan' => $siswa->map(function (Siswa $student, int $index) use ($pengumpulan, $kelasMapel, $tugas, $penaltyPerDay, $lastWhatsAppByStudent) {
                 $item = $pengumpulan->get($student->id);
                 $daysLate = $this->lateDays($item?->tanggal_kumpul, $tugas->batas_waktu);
+                $studentPhone = WhatsAppPhone::normalize((string) $student->nomor_whatsapp);
                 // A reminder remains available for every overdue row, including
                 // direct-graded assignments that have no submission record.
-                $canPrepareWhatsApp = $daysLate > 0;
+                $canPrepareWhatsApp = $daysLate > 0
+                    && $student->whatsapp_opt_in
+                    && $studentPhone !== null;
                 $lastWhatsApp = $lastWhatsAppByStudent->get($student->id);
 
                 return [
@@ -387,13 +390,25 @@ class TugasController extends Controller
         $this->ensureTugasBelongsToKelasMapel($tugas, $kelasMapel);
         $this->ensureSiswaBelongsToKelasMapel($siswa, $kelasMapel);
         $normalizedPhone = WhatsAppPhone::normalize((string) $siswa->nomor_whatsapp);
-        abort_unless($normalizedPhone !== null, 422, 'Nomor WhatsApp siswa belum valid. Periksa format nomor di pengaturan siswa.');
-        abort_unless($siswa->whatsapp_opt_in, 422, 'Siswa belum menyetujui menerima informasi melalui WhatsApp.');
+        if ($normalizedPhone === null) {
+            return response()->json([
+                'message' => 'Nomor WhatsApp siswa belum valid. Periksa format nomor di pengaturan siswa.',
+            ], 422);
+        }
+        if (! $siswa->whatsapp_opt_in) {
+            return response()->json([
+                'message' => 'Siswa belum menyetujui menerima informasi melalui WhatsApp.',
+            ], 422);
+        }
         if ($siswa->nomor_whatsapp !== $normalizedPhone) {
             $siswa->update(['nomor_whatsapp' => $normalizedPhone]);
         }
 
-        return response()->json($service->prepareLateTaskMessage($siswa, $tugas, (int) Auth::id()));
+        try {
+            return response()->json($service->prepareLateTaskMessage($siswa, $tugas, (int) Auth::id()));
+        } catch (\InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
     }
 
     public function whatsappMarkSent(WhatsAppMessageLog $log)

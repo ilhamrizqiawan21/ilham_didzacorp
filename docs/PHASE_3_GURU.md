@@ -4,7 +4,7 @@ Branch: `experimental/demo-lms`
 
 ## Scope
 
-Phase ini fokus pada **core teaching workflow Guru**, bukan migrasi seluruh laporan Guru. Rekap Nilai dan Rekap Sikap sengaja tetap legacy karena controller `NilaiController::rekap` dan `SikapController::rekap` masih mengembalikan Blade; migrasinya dipisahkan agar tidak mencampur perubahan UI dengan risiko perubahan query laporan.
+Phase ini berfokus pada **core teaching workflow Guru**. Pada saat phase ini ditulis, Rekap Nilai dan Rekap Sikap masih legacy; keduanya kemudian dimigrasikan pada Phase 4 dan sekarang menggunakan controller Inertia khusus.
 
 ## Audit
 

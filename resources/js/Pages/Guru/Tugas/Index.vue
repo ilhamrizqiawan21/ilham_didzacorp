@@ -99,7 +99,7 @@ function submit() {
             eyebrow="Teaching Workspace"
             title="Penugasan Guru"
             subtitle="Buat, bagikan, dan pantau tugas lintas kelas dari satu tempat."
-            icon="bi-journal-fill"
+            icon="bi-journal-check"
             tone="teacher"
         >
             <template #actions>

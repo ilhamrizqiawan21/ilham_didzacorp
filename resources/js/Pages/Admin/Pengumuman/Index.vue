@@ -129,19 +129,30 @@ function remove(item: Announcement) {
                         <div class="col-md-4">
                             <label class="form-label">Target</label>
                             <select v-model="form.target" class="form-select">
-                                <option v-if="isAdmin" value="semua">Semua</option>
+                                <option value="semua">{{ isAdmin ? 'Semua' : 'Semua kelas' }}</option>
                                 <option v-if="isAdmin" value="guru">Guru</option>
                                 <option v-if="isAdmin" value="siswa">Siswa</option>
                                 <option value="kelas_mapel">Kelas tertentu</option>
                             </select>
                         </div>
-                        <div v-if="form.target === 'kelas_mapel'" class="col-12">
+                        <div v-if="form.target === 'kelas_mapel'" class="col-md-6">
                             <label class="form-label">Kelas Tujuan</label>
-                            <select v-model="form.target_kelas_ids" class="form-select" multiple size="5">
-                                <option v-for="kelasItem in targetKelasOptions" :key="kelasItem.id" :value="kelasItem.id">
-                                    {{ kelasItem.tingkat }} {{ kelasItem.nama_kelas }}
-                                </option>
-                            </select>
+                            <div class="py-1" style="max-height: 190px; overflow-y: auto;">
+                                <div v-if="!targetKelasOptions.length" class="text-muted small">Belum ada kelas yang tersedia.</div>
+                                <div v-for="kelasItem in targetKelasOptions" :key="kelasItem.id" class="form-check">
+                                    <input
+                                        :id="`target-kelas-${kelasItem.id}`"
+                                        v-model="form.target_kelas_ids"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        :value="kelasItem.id"
+                                    >
+                                    <label class="form-check-label" :for="`target-kelas-${kelasItem.id}`">
+                                        {{ kelasItem.nama_kelas }}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-text">Centang satu atau beberapa kelas tujuan.</div>
                             <div v-if="form.errors.target_kelas_ids" class="text-danger small mt-1">{{ form.errors.target_kelas_ids }}</div>
                         </div>
                         <div class="col-12">
@@ -171,8 +182,8 @@ function remove(item: Announcement) {
                                 v-model="form.public_file"
                                 name="public_file"
                                 label="Lampiran papan login"
-                                accept=".pdf,.jpg,.jpeg,.png,.webp,.xls,.xlsx,.doc,.docx"
-                                accept-label="PDF, gambar, Excel, atau Word"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                accept-label="PDF, JPG, JPEG, PNG"
                                 max-size="5MB"
                                 :error="form.errors.public_file"
                                 help="Opsional. File hanya bisa diunduh dari halaman login jika pengumuman ditampilkan publik."

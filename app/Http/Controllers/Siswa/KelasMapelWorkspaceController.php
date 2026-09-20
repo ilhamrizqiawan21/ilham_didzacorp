@@ -60,7 +60,7 @@ class KelasMapelWorkspaceController extends Controller
             ],
             'metrics' => [
                 ['label' => 'Materi', 'value' => Materi::where('kelas_mapel_id', $kelasMapel->id)->count(), 'icon' => 'bi-file-earmark-text-fill', 'tone' => 'primary', 'href' => route('siswa.materi.list', $kelasMapel)],
-                ['label' => 'Tugas', 'value' => $totalTasks, 'icon' => 'bi-journal-fill', 'tone' => 'warning'],
+                ['label' => 'Tugas', 'value' => $totalTasks, 'icon' => 'bi-journal-check', 'tone' => 'warning'],
                 ['label' => 'Sudah dikumpulkan', 'value' => $submittedCount, 'icon' => 'bi-check-circle-fill', 'tone' => 'success'],
                 ['label' => 'Belum dikumpulkan', 'value' => max(0, $totalTasks - $submittedCount), 'icon' => 'bi-exclamation-circle-fill', 'tone' => 'danger'],
             ],

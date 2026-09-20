@@ -76,6 +76,16 @@ function formatAverage(value: number | null) {
     return value === null ? null : value.toFixed(1);
 }
 
+function fillColumn(group: 'sosial' | 'spiritual', fieldKey: string, event: Event): void {
+    if (!(event.target instanceof HTMLSelectElement)) return;
+    const value = event.target.value;
+    event.target.value = '';
+    if (!value) return;
+    props.students.forEach((student) => {
+        form[group][String(student.id)][fieldKey] = Number(value);
+    });
+}
+
 function submit() {
     if (form.processing) {
         return;
@@ -114,7 +124,7 @@ function submit() {
 
             <Card title="Sikap Spiritual (KI-1)" icon="bi-star-fill" body-class="p-0" class="mb-3">
                 <template #actions>
-                    <span class="text-muted text-xs">Skala 1-5</span>
+                        <span class="text-muted text-xs">Gunakan dropdown pada header untuk mengisi semua siswa</span>
                 </template>
 
                 <TableWrapper>
@@ -141,6 +151,16 @@ function submit() {
                                     {{ field.label }}
                                 </th>
                                 <th class="text-center">Rata-rata</th>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td v-for="field in spiritualFields" :key="`spiritual-fill-${field.key}`" class="text-center">
+                                    <select class="form-select form-select-sm attitude-select" aria-label="Isi semua siswa" @change="fillColumn('spiritual', field.key, $event)">
+                                        <option value="">-</option>
+                                        <option v-for="value in 5" :key="value" :value="value">{{ value }}</option>
+                                    </select>
+                                </td>
+                                <td></td>
                             </tr>
                         </thead>
                         <tbody>
@@ -179,7 +199,7 @@ function submit() {
 
             <Card title="Sikap Sosial (KI-2)" icon="bi-people-fill" body-class="p-0" class="mb-3">
                 <template #actions>
-                    <span class="text-muted text-xs">Skala 1-5</span>
+                        <span class="text-muted text-xs">Gunakan dropdown pada header untuk mengisi semua siswa</span>
                 </template>
 
                 <TableWrapper>
@@ -206,6 +226,16 @@ function submit() {
                                     {{ field.label }}
                                 </th>
                                 <th class="text-center">Rata-rata</th>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td v-for="field in sosialFields" :key="`sosial-fill-${field.key}`" class="text-center">
+                                    <select class="form-select form-select-sm attitude-select" aria-label="Isi semua siswa" @change="fillColumn('sosial', field.key, $event)">
+                                        <option value="">-</option>
+                                        <option v-for="value in 5" :key="value" :value="value">{{ value }}</option>
+                                    </select>
+                                </td>
+                                <td></td>
                             </tr>
                         </thead>
                         <tbody>

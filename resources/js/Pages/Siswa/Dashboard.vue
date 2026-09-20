@@ -26,7 +26,7 @@ const iconMap = {
 function iconFor(type: string) { return iconMap[type as keyof typeof iconMap] ?? { icon: 'bi-bell-fill', color: '#6b7280' }; }
 
 const metrics = computed(() => [
-    { label: 'Total tugas', value: props.stats.total_tugas ?? 0, icon: 'bi-journal-fill', tone: 'primary', href: props.links.tugas },
+    { label: 'Total tugas', value: props.stats.total_tugas ?? 0, icon: 'bi-journal-check', tone: 'primary', href: props.links.tugas },
     { label: 'Selesai', value: props.stats.tugas_selesai ?? 0, icon: 'bi-check-circle-fill', tone: 'success', href: props.links.tugas },
     { label: 'Belum', value: props.stats.tugas_belum ?? 0, icon: 'bi-exclamation-circle-fill', tone: 'warning', href: props.links.tugas },
     { label: 'Materi', value: props.stats.total_materi ?? 0, icon: 'bi-file-earmark-text-fill', tone: 'info', href: props.links.materi },

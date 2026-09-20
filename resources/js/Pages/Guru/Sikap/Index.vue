@@ -89,6 +89,17 @@ function formatAverage(value: number | null) {
     return value === null ? null : value.toFixed(1);
 }
 
+function fillColumn(group: 'sosial' | 'spiritual', fieldKey: string, event: Event): void {
+    if (!(event.target instanceof HTMLSelectElement) || !activeGroup.value) return;
+    const value = event.target.value;
+    event.target.value = '';
+    if (!value) return;
+    const groupId = String(activeGroup.value?.kelas_mapel_id ?? '');
+    activeGroup.value?.students.forEach((student) => {
+        form[group][groupId][String(student.id)][fieldKey] = Number(value);
+    });
+}
+
 function submit() {
     if (form.processing) {
         return;
@@ -154,13 +165,13 @@ function submit() {
                     </template>
 
                     <div class="text-muted text-sm">
-                        Skala penilaian 1-5. Nilai rata-rata dihitung otomatis dari kolom yang terisi.
+                        Skala: 1 = Tidak Baik, 2 = Kurang Baik, 3 = Cukup, 4 = Baik, 5 = Sangat Baik. Nilai rata-rata dihitung otomatis.
                     </div>
                 </Card>
 
                 <Card title="Sikap Spiritual (KI-1)" icon="bi-star-fill" body-class="p-0" class="mb-3">
                     <template #actions>
-                        <span class="text-muted text-xs">Skala 1-5</span>
+                        <span class="text-muted text-xs">Gunakan dropdown pada header untuk mengisi semua siswa</span>
                     </template>
 
                     <TableWrapper>
@@ -181,15 +192,25 @@ function submit() {
                                     <th class="text-center">#</th>
                                     <th>NIS</th>
                                     <th>Nama Siswa</th>
-                                    <th
+                                <th
                                         v-for="field in spiritualFields"
                                         :key="field.key"
                                         class="text-center"
                                     >
-                                        {{ field.label }}
-                                    </th>
-                                    <th class="text-center">Rata-rata</th>
-                                </tr>
+                                    {{ field.label }}
+                                </th>
+                                <th class="text-center">Rata-rata</th>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td v-for="field in spiritualFields" :key="`spiritual-fill-${field.key}`" class="text-center">
+                                    <select class="form-select form-select-sm attitude-select" aria-label="Isi semua siswa" @change="fillColumn('spiritual', field.key, $event)">
+                                        <option value="">-</option>
+                                        <option v-for="value in 5" :key="value" :value="value">{{ value }}</option>
+                                    </select>
+                                </td>
+                                <td></td>
+                            </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="student in activeGroup.students" :key="`spiritual-${activeGroup.kelas_mapel_id}-${student.id}`">
@@ -228,7 +249,7 @@ function submit() {
 
                 <Card title="Sikap Sosial (KI-2)" icon="bi-people-fill" body-class="p-0" class="mb-3">
                     <template #actions>
-                        <span class="text-muted text-xs">Skala 1-5</span>
+                        <span class="text-muted text-xs">Gunakan dropdown pada header untuk mengisi semua siswa</span>
                     </template>
 
                     <TableWrapper>
@@ -255,9 +276,19 @@ function submit() {
                                         class="text-center"
                                     >
                                         {{ field.label }}
-                                    </th>
-                                    <th class="text-center">Rata-rata</th>
-                                </tr>
+                                </th>
+                                <th class="text-center">Rata-rata</th>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td v-for="field in sosialFields" :key="`sosial-fill-${field.key}`" class="text-center">
+                                    <select class="form-select form-select-sm attitude-select" aria-label="Isi semua siswa" @change="fillColumn('sosial', field.key, $event)">
+                                        <option value="">-</option>
+                                        <option v-for="value in 5" :key="value" :value="value">{{ value }}</option>
+                                    </select>
+                                </td>
+                                <td></td>
+                            </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="student in activeGroup.students" :key="`sosial-${activeGroup.kelas_mapel_id}-${student.id}`">

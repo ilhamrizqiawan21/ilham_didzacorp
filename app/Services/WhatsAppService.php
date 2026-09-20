@@ -17,6 +17,9 @@ class WhatsAppService
         if ($phone === null) {
             throw new \InvalidArgumentException('Nomor WhatsApp siswa belum valid.');
         }
+        if (! $siswa->whatsapp_opt_in) {
+            throw new \InvalidArgumentException('Siswa belum menyetujui menerima informasi melalui WhatsApp.');
+        }
 
         $siswa->loadMissing('user');
         $course = $currentTask->kelasMapel;
@@ -35,6 +38,10 @@ class WhatsAppService
 
             return ['task' => $task, 'days' => $days];
         })->filter(fn ($item) => $item['days'] > 0)->values();
+        if ($items->isEmpty()) {
+            throw new \InvalidArgumentException('Tidak ada tugas terlambat yang perlu diingatkan.');
+        }
+
         $totalDays = (int) $items->sum('days');
         $lines = $items->map(fn ($item, $index) => ($index + 1).". {$item['task']->kelasMapel->mataPelajaran->nama_mapel} - {$item['task']->judul}\n   Terlambat: {$item['days']} hari")->implode("\n\n");
         $defaultTemplate = "Halo {{nama_siswa}},\n\nBerikut tugas yang perlu segera diselesaikan:\n\n{{daftar_tugas}}\n\nTotal hari keterlambatan: {{total_hari_terlambat}}\n\nMohon segera menyelesaikan dan mengumpulkan tugas melalui LMS:\n{{url_lms}}";

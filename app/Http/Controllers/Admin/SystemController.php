@@ -4,13 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BlockedIp;
+use App\Models\GuruMapel;
+use App\Models\Kelas;
 use App\Models\LogLogin;
+use App\Models\MataPelajaran;
 use App\Models\Pengaturan;
 use App\Models\SchoolSetting;
 use App\Models\SystemError;
 use App\Models\TahunAjaran;
+use App\Models\User;
+use App\Models\WaliKelas;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Border;
@@ -141,6 +148,11 @@ class SystemController extends Controller
         $settings = Pengaturan::pluck('value', 'key')->toArray();
         $tahunAjaranAktif = TahunAjaran::getAktif();
         $schoolSetting = SchoolSetting::query()->first() ?: new SchoolSetting(SchoolSetting::fallback());
+        $guru = User::whereHas('role', fn ($q) => $q->where('nama_role', 'guru'))->where('is_active', true)->orderBy('id')->first();
+        $guruMapelIds = $guru ? GuruMapel::where('guru_id', $guru->id)->pluck('mapel_id')->values() : collect();
+        $waliKelas = $guru && $tahunAjaranAktif
+            ? WaliKelas::where('guru_id', $guru->id)->where('tahun_ajaran_id', $tahunAjaranAktif->id)->first()
+            : null;
 
         return Inertia::render('Admin/Pengaturan/Index', [
             'settings' => [
@@ -155,13 +167,64 @@ class SystemController extends Controller
                 'tahun' => $tahunAjaranAktif->tahun,
             ] : null,
             'schoolSetting' => $this->schoolSettingPayload($schoolSetting),
+            'teaching' => [
+                'guru' => $guru ? ['id' => $guru->id, 'nama' => $guru->nama_lengkap, 'username' => $guru->username] : null,
+                'mapel' => MataPelajaran::orderBy('urutan')->orderBy('nama_mapel')->get(['id', 'kode', 'nama_mapel'])->values(),
+                'selected_mapel_ids' => $guruMapelIds,
+                'kelas' => Kelas::orderBy('tingkat')->orderBy('nama_kelas')->get(['id', 'tingkat', 'nama_kelas'])->values(),
+                'wali_kelas_id' => $waliKelas?->kelas_id,
+            ],
             'urls' => [
                 'save_system' => route('admin.pengaturan.save'),
                 'save_school' => route('admin.school-settings.update'),
                 'tahun_ajaran' => route('admin.tahun-ajaran.index'),
                 'blocked_ips' => route('admin.blocked-ips'),
+                'save_teaching' => route('admin.pengaturan.teaching.save'),
             ],
         ]);
+    }
+
+    public function saveTeaching(Request $request)
+    {
+        $validated = $request->validate([
+            'guru_id' => ['required', 'integer', 'exists:users,id'],
+            'mapel_ids' => ['array'],
+            'mapel_ids.*' => ['integer', 'exists:mata_pelajaran,id'],
+            'wali_kelas_id' => ['nullable', 'integer', 'exists:kelas,id'],
+        ]);
+
+        $guru = User::whereKey($validated['guru_id'])->whereHas('role', fn ($q) => $q->where('nama_role', 'guru'))->firstOrFail();
+        $tahunAjaran = TahunAjaran::getAktif();
+
+        DB::transaction(function () use ($validated, $guru, $tahunAjaran) {
+            GuruMapel::where('guru_id', $guru->id)->delete();
+            foreach (array_unique(array_map('intval', $validated['mapel_ids'] ?? [])) as $mapelId) {
+                GuruMapel::create(['guru_id' => $guru->id, 'mapel_id' => $mapelId]);
+            }
+
+            if ($tahunAjaran) {
+                $current = WaliKelas::where('guru_id', $guru->id)->where('tahun_ajaran_id', $tahunAjaran->id)->first();
+                $requestedClassId = $validated['wali_kelas_id'] ?? null;
+                if ($current && (int) $current->kelas_id !== (int) $requestedClassId) {
+                    $hasHistory = $current->absensi()->exists() || $current->pertemuan()->exists() || $current->penangananSiswa()->exists();
+                    if ($hasHistory) {
+                        throw ValidationException::withMessages([
+                            'wali_kelas_id' => 'Kelas wali tidak dapat diubah karena sudah memiliki riwayat data.',
+                        ]);
+                    }
+                    $current->delete();
+                }
+                if ($requestedClassId && (! $current || (int) $current->kelas_id !== (int) $requestedClassId)) {
+                    WaliKelas::create([
+                        'guru_id' => $guru->id,
+                        'kelas_id' => $requestedClassId,
+                        'tahun_ajaran_id' => $tahunAjaran->id,
+                    ]);
+                }
+            }
+        });
+
+        return back()->with('success', 'Pengaturan guru, mata pelajaran, dan wali kelas berhasil disimpan.');
     }
 
     // Simpan pengaturan sistem
@@ -185,10 +248,24 @@ class SystemController extends Controller
     }
 
     // Memblokir IP tertentu agar tidak bisa mengakses sistem
-    public function blockedIps()
+    public function blockedIps(Request $request)
     {
-        $ips = BlockedIp::orderBy('created_at', 'desc')
+        // Remove stale entries so the page and the middleware use the same
+        // definition of an active block.
+        BlockedIp::query()->where('blocked_until', '<=', now())->delete();
+
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:45'],
+        ]);
+
+        $query = BlockedIp::query()->active();
+        if (filled($validated['search'] ?? null)) {
+            $query->where('ip_address', 'like', '%'.addcslashes($validated['search'], '%_\\').'%');
+        }
+
+        $ips = $query->orderBy('created_at', 'desc')
             ->paginate(25)
+            ->withQueryString()
             ->through(fn (BlockedIp $ip) => [
                 'id' => $ip->id,
                 'ip_address' => $ip->ip_address,
@@ -201,6 +278,7 @@ class SystemController extends Controller
 
         return Inertia::render('Admin/BlockedIps/Index', [
             'ips' => $ips,
+            'filters' => ['search' => $validated['search'] ?? ''],
         ]);
     }
 
