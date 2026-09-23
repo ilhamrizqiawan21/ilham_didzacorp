@@ -169,6 +169,7 @@ return [
     |
     */
 
+    // Set SESSION_SECURE_COOKIE=true in production (see .env.example).
     'secure' => env('SESSION_SECURE_COOKIE'),
 
     /*
