@@ -202,10 +202,8 @@ class SiswaProgressTest extends TestCase
 
     private function fixture(): array
     {
-        Role::create(['nama_role' => 'admin']);
         Role::create(['nama_role' => 'guru']);
         Role::create(['nama_role' => 'siswa']);
-        Role::create(['nama_role' => 'kepala_sekolah']);
 
         $teacher = $this->createUser('guru-progress', 'Guru Progress', 'guru');
         $studentUser = $this->createUser('siswa-progress', 'Siswa Progress', 'siswa');

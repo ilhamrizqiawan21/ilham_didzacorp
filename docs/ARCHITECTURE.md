@@ -13,18 +13,20 @@ Dokumen ini menjelaskan penempatan kode utama LMS Sekolah agar pengembangan beri
 
 ## Struktur Role
 
+Aplikasi ini memakai 2 role: `guru` (juga berperan sebagai admin sekolah) dan `siswa`. Halaman dirender lewat Inertia/Vue (`resources/js/Pages`), bukan Blade per role; Blade hanya dipakai untuk dokumen PDF (lihat [Pola Export File](#pola-export-file)).
+
 ```text
-app/Http/Controllers/Admin
+app/Http/Controllers/Admin   # fitur administratif, tetap dijaga middleware role:guru
 app/Http/Controllers/Guru
 app/Http/Controllers/Siswa
-app/Http/Controllers/Kepsek
-resources/views/admin
-resources/views/guru
-resources/views/siswa
-resources/views/kepsek
+resources/js/Pages/Admin
+resources/js/Pages/Guru
+resources/js/Pages/Siswa
 ```
 
 Gunakan folder role jika fitur hanya dipakai role tersebut. Gunakan controller/service umum jika fiturnya lintas role, misalnya export laporan.
+
+Catatan: aplikasi ini pernah memakai 4 role (admin, guru, siswa, kepala_sekolah/kepsek) dari basis kode LMS sebelumnya. Sisa controller dan halaman `Kepsek` yang sudah tidak ter-routing telah dihapus.
 
 ## Service Saat Ini
 

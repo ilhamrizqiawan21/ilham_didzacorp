@@ -62,34 +62,6 @@ class StatistikService
         ];
     }
 
-    /**
-     * Statistik dashboard kepala sekolah.
-     */
-    public function dashboardKepsek(): array
-    {
-        $totalSiswa = Siswa::where('status', 'aktif')->count();
-        $totalGuru = $this->countUsersByRole('guru');
-        $totalKelas = Kelas::count();
-
-        // Rata-rata nilai seluruh siswa
-        $rataNilai = NilaiAkhir::selectRaw('AVG('.NilaiAkhir::rataAkhirExpression().') as rata_rata')
-            ->value('rata_rata');
-
-        // Persentase kehadiran
-        $totalAbsensi = Absensi::count();
-        $totalHadir = Absensi::where('status', 'hadir')->count();
-        $persenHadir = $totalAbsensi > 0 ? round(($totalHadir / $totalAbsensi) * 100, 2) : 0;
-
-        return [
-            'total_siswa' => $totalSiswa,
-            'total_guru' => $totalGuru,
-            'total_kelas' => $totalKelas,
-            'rata_nilai' => round($rataNilai ?? 0, 2),
-            'persen_hadir' => $persenHadir,
-            'total_mapel' => MataPelajaran::count(),
-        ];
-    }
-
     private function countUsersByRole(string $role): int
     {
         return User::whereHas('role', fn($query) => $query->where('nama_role', $role))->count();

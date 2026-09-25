@@ -106,10 +106,8 @@ class WaliKelasBiodataTest extends TestCase
 
     private function fixture(): array
     {
-        Role::create(['id' => 1, 'nama_role' => 'admin']);
         Role::create(['id' => 2, 'nama_role' => 'guru']);
         Role::create(['id' => 3, 'nama_role' => 'siswa']);
-        Role::create(['id' => 4, 'nama_role' => 'kepala_sekolah']);
 
         $guruA = $this->makeUser('guru', 'guru-biodata-a', 'GURU BIODATA A');
         $guruB = $this->makeUser('guru', 'guru-biodata-b', 'GURU BIODATA B');
